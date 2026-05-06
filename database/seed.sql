@@ -1,6 +1,7 @@
 -- MySQL 8.0+
 -- College Competition AI System
 -- Phase 1 demo seed data
+-- Demo accounts use demo-only plain passwords for local development.
 
 USE college_competition_ai;
 

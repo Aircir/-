@@ -94,3 +94,10 @@
 
 1. `feat/backend-bootstrap-competition`
 2. 先把竞赛列表接口和竞赛详情接口接起来
+
+## Notes
+
+- Optional foreign keys now use `ON DELETE SET NULL` so phase-1 admin CRUD is not blocked by historical logs or statistics.
+- `competition_info.category_id` may become `NULL` after a category is deleted. Backend code should treat that case as uncategorized data.
+- Demo passwords in `seed.sql` are for local development and defense demos only.
+- `signup_status` is constrained to `Draft`, `Warmup`, `Open`, `Closed`, or `Ended`.

@@ -24,7 +24,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 CREATE TABLE user_info (
     user_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'User primary key',
     username VARCHAR(50) NOT NULL COMMENT 'Username',
-    password VARCHAR(255) NOT NULL COMMENT 'Password hash or demo password',
+    password VARCHAR(255) NOT NULL COMMENT 'Password hash or demo-only password',
     real_name VARCHAR(50) DEFAULT NULL COMMENT 'Real name',
     major VARCHAR(50) DEFAULT NULL COMMENT 'Major',
     grade VARCHAR(20) DEFAULT NULL COMMENT 'Grade',
@@ -34,7 +34,9 @@ CREATE TABLE user_info (
     update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated at',
     PRIMARY KEY (user_id),
     UNIQUE KEY uk_user_info_username (username),
-    KEY idx_user_info_user_type_status (user_type, status)
+    KEY idx_user_info_user_type_status (user_type, status),
+    CONSTRAINT chk_user_info_user_type CHECK (user_type IN (1, 2)),
+    CONSTRAINT chk_user_info_status CHECK (status IN (0, 1))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='User table';
 
 CREATE TABLE competition_category (
@@ -52,7 +54,7 @@ CREATE TABLE competition_category (
 CREATE TABLE competition_info (
     competition_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Competition primary key',
     competition_name VARCHAR(128) NOT NULL COMMENT 'Competition name',
-    category_id BIGINT UNSIGNED NOT NULL COMMENT 'Category id',
+    category_id BIGINT UNSIGNED DEFAULT NULL COMMENT 'Category id',
     organizer VARCHAR(128) DEFAULT NULL COMMENT 'Organizer',
     competition_level VARCHAR(32) DEFAULT NULL COMMENT 'Competition level',
     signup_status VARCHAR(20) NOT NULL DEFAULT 'Open' COMMENT 'Signup status',
@@ -70,11 +72,16 @@ CREATE TABLE competition_info (
     update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated at',
     PRIMARY KEY (competition_id),
     CONSTRAINT fk_competition_info_category
-        FOREIGN KEY (category_id) REFERENCES competition_category (category_id),
+        FOREIGN KEY (category_id) REFERENCES competition_category (category_id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
     KEY idx_competition_info_category (category_id),
     KEY idx_competition_info_level_status (competition_level, signup_status, display_status),
     KEY idx_competition_info_signup_end (signup_end),
-    KEY idx_competition_info_name (competition_name)
+    KEY idx_competition_info_name (competition_name),
+    CONSTRAINT chk_competition_info_signup_status
+        CHECK (signup_status IN ('Draft', 'Warmup', 'Open', 'Closed', 'Ended')),
+    CONSTRAINT chk_competition_info_display_status CHECK (display_status IN (0, 1))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Competition info table';
 
 CREATE TABLE search_log (
@@ -88,11 +95,16 @@ CREATE TABLE search_log (
     search_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Search time',
     PRIMARY KEY (search_id),
     CONSTRAINT fk_search_log_user
-        FOREIGN KEY (user_id) REFERENCES user_info (user_id),
+        FOREIGN KEY (user_id) REFERENCES user_info (user_id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
     CONSTRAINT fk_search_log_category
-        FOREIGN KEY (category_id) REFERENCES competition_category (category_id),
+        FOREIGN KEY (category_id) REFERENCES competition_category (category_id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
     KEY idx_search_log_user_time (user_id, search_time),
-    KEY idx_search_log_category_time (category_id, search_time)
+    KEY idx_search_log_category_time (category_id, search_time),
+    CONSTRAINT chk_search_log_result_count CHECK (result_count >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Search log table';
 
 CREATE TABLE consult_record (
@@ -108,12 +120,17 @@ CREATE TABLE consult_record (
     consult_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Consult time',
     PRIMARY KEY (record_id),
     CONSTRAINT fk_consult_record_user
-        FOREIGN KEY (user_id) REFERENCES user_info (user_id),
+        FOREIGN KEY (user_id) REFERENCES user_info (user_id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
     CONSTRAINT fk_consult_record_competition
-        FOREIGN KEY (competition_id) REFERENCES competition_info (competition_id),
+        FOREIGN KEY (competition_id) REFERENCES competition_info (competition_id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
     KEY idx_consult_record_user_time (user_id, consult_time),
     KEY idx_consult_record_session_time (session_id, consult_time),
-    KEY idx_consult_record_competition_time (competition_id, consult_time)
+    KEY idx_consult_record_competition_time (competition_id, consult_time),
+    CONSTRAINT chk_consult_record_response_mode CHECK (response_mode IN ('JSON', 'SSE') OR response_mode IS NULL)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Consult record table';
 
 CREATE TABLE navigation_command (
@@ -129,9 +146,13 @@ CREATE TABLE navigation_command (
     execute_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Execution time',
     PRIMARY KEY (command_id),
     CONSTRAINT fk_navigation_command_user
-        FOREIGN KEY (user_id) REFERENCES user_info (user_id),
+        FOREIGN KEY (user_id) REFERENCES user_info (user_id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
     KEY idx_navigation_command_user_time (user_id, execute_time),
-    KEY idx_navigation_command_intent_time (intent_name, execute_time)
+    KEY idx_navigation_command_intent_time (intent_name, execute_time),
+    CONSTRAINT chk_navigation_command_execute_result
+        CHECK (execute_result IN ('success', 'failed', 'ignored', 'no_match') OR execute_result IS NULL)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Navigation command table';
 
 CREATE TABLE statistic_summary (
@@ -150,17 +171,30 @@ CREATE TABLE statistic_summary (
     update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated at',
     PRIMARY KEY (summary_id),
     CONSTRAINT fk_statistic_summary_user
-        FOREIGN KEY (user_id) REFERENCES user_info (user_id),
+        FOREIGN KEY (user_id) REFERENCES user_info (user_id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
     CONSTRAINT fk_statistic_summary_record
-        FOREIGN KEY (record_id) REFERENCES consult_record (record_id),
+        FOREIGN KEY (record_id) REFERENCES consult_record (record_id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
     CONSTRAINT fk_statistic_summary_search
-        FOREIGN KEY (search_id) REFERENCES search_log (search_id),
+        FOREIGN KEY (search_id) REFERENCES search_log (search_id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
     CONSTRAINT fk_statistic_summary_command
-        FOREIGN KEY (command_id) REFERENCES navigation_command (command_id),
+        FOREIGN KEY (command_id) REFERENCES navigation_command (command_id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
     CONSTRAINT fk_statistic_summary_category
-        FOREIGN KEY (category_id) REFERENCES competition_category (category_id),
+        FOREIGN KEY (category_id) REFERENCES competition_category (category_id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
     CONSTRAINT fk_statistic_summary_competition
-        FOREIGN KEY (competition_id) REFERENCES competition_info (competition_id),
+        FOREIGN KEY (competition_id) REFERENCES competition_info (competition_id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
     KEY idx_statistic_summary_type_key (summary_type, summary_key),
-    KEY idx_statistic_summary_date (stats_date)
+    KEY idx_statistic_summary_date (stats_date),
+    CONSTRAINT chk_statistic_summary_value CHECK (summary_value >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Statistic summary table';
