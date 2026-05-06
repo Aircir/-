@@ -1,0 +1,59 @@
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor / IDE
+.idea/
+.vscode/
+.vs/
+*.suo
+*.user
+*.userossc
+*.sln.docstates
+*.swp
+*.tmp
+*.bak
+
+# Logs
+*.log
+logs/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Node / frontend
+node_modules/
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+build/
+out/
+dist/
+bin/
+obj/
+Debug/
+Release/
+x64/
+x86/
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+CTestTestfile.cmake
+Testing/
+Makefile
+cmake-build-*/
+
+# Runtime data
+coverage/
+.cache/
+temp/
+tmp/
