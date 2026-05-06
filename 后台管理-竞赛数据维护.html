@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-highest": "#e0e3e5",
+                    "on-secondary-container": "#592600",
+                    "tertiary-container": "#49596f",
+                    "on-background": "#191c1e",
+                    "tertiary-fixed": "#d3e4fe",
+                    "secondary-fixed": "#ffdbc8",
+                    "tertiary": "#324257",
+                    "primary-container": "#0f52ba",
+                    "surface-variant": "#e0e3e5",
+                    "on-surface": "#191c1e",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed": "#321200",
+                    "on-secondary": "#ffffff",
+                    "surface-bright": "#f7f9fb",
+                    "primary": "#003c90",
+                    "surface-dim": "#d8dadc",
+                    "surface-container": "#eceef0",
+                    "on-tertiary-container": "#bfd0ea",
+                    "secondary-container": "#fb7800",
+                    "tertiary-fixed-dim": "#b7c8e1",
+                    "outline-variant": "#c3c6d5",
+                    "primary-fixed-dim": "#b0c6ff",
+                    "on-primary-container": "#bcceff",
+                    "on-tertiary-fixed": "#0b1c30",
+                    "surface-container-low": "#f2f4f6",
+                    "on-surface-variant": "#434653",
+                    "inverse-surface": "#2d3133",
+                    "on-error-container": "#93000a",
+                    "outline": "#737784",
+                    "inverse-on-surface": "#eff1f3",
+                    "error-container": "#ffdad6",
+                    "on-primary": "#ffffff",
+                    "primary-fixed": "#d9e2ff",
+                    "inverse-primary": "#b0c6ff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed-variant": "#38485d",
+                    "secondary-fixed-dim": "#ffb68b",
+                    "surface-container-high": "#e6e8ea",
+                    "on-error": "#ffffff",
+                    "background": "#f7f9fb",
+                    "surface": "#f7f9fb",
+                    "on-tertiary": "#ffffff",
+                    "secondary": "#994700",
+                    "surface-tint": "#1d59c1",
+                    "on-secondary-fixed-variant": "#753400",
+                    "on-primary-fixed": "#001945",
+                    "on-primary-fixed-variant": "#00419c"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "gutter": "24px",
+                    "xl": "64px",
+                    "sm": "16px",
+                    "md": "24px",
+                    "xs": "8px",
+                    "lg": "40px",
+                    "margin": "32px"
+            },
+            "fontFamily": {
+                    "h2": ["Manrope"],
+                    "h1": ["Manrope"],
+                    "body-lg": ["Manrope"],
+                    "display": ["Manrope"],
+                    "body-md": ["Manrope"],
+                    "label-caps": ["Manrope"]
+            },
+            "fontSize": {
+                    "h2": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "h1": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "display": ["36px", {"lineHeight": "1.2", "fontWeight": "800"}],
+                    "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background flex overflow-hidden h-screen">
+<!-- SideNavBar (Authority Source: JSON) -->
+<aside class="flex flex-col h-screen py-md space-y-xs docked left-0 h-full w-64 bg-surface-container-low dark:bg-on-background border-r border-outline-variant dark:border-outline shrink-0">
+<div class="px-md mb-lg">
+<div class="flex items-center space-x-sm mb-xs">
+<img alt="管理员头像" class="w-10 h-10 rounded-full object-cover" data-alt="A professional headshot of a high-level academic administrator in a clean, modern office setting. The lighting is soft and natural, reflecting a sophisticated and authoritative atmosphere. The color palette is composed of muted blues and greys, aligning with a professional education management system's minimalist and efficient design language." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxxJ5c2yGyzTdONRDZTGCVOgbBtCQbc9ru25t4k17U43lH_wnMZAlmvPqueFT4Wy_2LEdqF5XsQhnH8QJz-LYRRZ9baZP8Zt916J9s3DxlYAIL2eNlLKB1mCKgcyQQ25V34x5aoXQsuS9LC7CJomqvnGonLgZc5SjauL2H38sKQGtpxwDgXJgZICKAgoK6550EKMhycCLGU_529pGY95aR5sYJOLznmi2-nIclAM36OMYkcVh1Mj12nAylOp3FepSpugs1cxTZ-cyc"/>
+<div>
+<h2 class="text-on-surface dark:text-on-surface-variant font-h2 text-h2 leading-tight">管理后台</h2>
+<p class="text-on-surface-variant dark:text-surface-variant font-body-md text-body-md opacity-70">竞赛专家系统</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-xs overflow-y-auto px-xs scrollbar-hide">
+<a class="flex items-center space-x-sm px-sm py-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high mx-2 hover:bg-surface-container-highest dark:hover:bg-inverse-surface rounded-lg transition-all font-label-caps text-label-caps uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>仪表盘</span>
+</a>
+<a class="flex items-center space-x-sm px-sm py-md bg-primary-container text-on-primary-container dark:bg-primary dark:text-on-primary rounded-lg mx-2 font-label-caps text-label-caps uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="emoji_events">emoji_events</span>
+<span>竞赛管理</span>
+</a>
+<a class="flex items-center space-x-sm px-sm py-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high mx-2 hover:bg-surface-container-highest dark:hover:bg-inverse-surface rounded-lg transition-all font-label-caps text-label-caps uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span>咨询流水</span>
+</a>
+<a class="flex items-center space-x-sm px-sm py-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high mx-2 hover:bg-surface-container-highest dark:hover:bg-inverse-surface rounded-lg transition-all font-label-caps text-label-caps uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span>用户管理</span>
+</a>
+<a class="flex items-center space-x-sm px-sm py-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high mx-2 hover:bg-surface-container-highest dark:hover:bg-inverse-surface rounded-lg transition-all font-label-caps text-label-caps uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>系统设置</span>
+</a>
+</nav>
+<div class="px-md pt-md">
+<button class="w-full py-md bg-primary text-on-primary rounded-xl font-h2 text-h2 hover:opacity-90 transition-opacity flex items-center justify-center space-x-xs">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+<span class="text-body-md font-bold">发布新竞赛</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col overflow-hidden">
+<!-- Header -->
+<header class="h-20 flex items-center justify-between px-xl bg-surface border-b border-outline-variant/30 shrink-0">
+<div>
+<h1 class="font-h1 text-h1 text-on-background">竞赛管理</h1>
+<p class="text-on-surface-variant font-body-md text-body-md">管理平台内的所有竞赛项目及其分类配置</p>
+</div>
+<div class="flex items-center space-x-md">
+<div class="relative group">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-xl text-body-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all w-64" placeholder="搜索竞赛..." type="text"/>
+</div>
+<button class="bg-primary text-on-primary px-gutter py-2.5 rounded-xl font-h2 text-body-md flex items-center space-x-xs shadow-sm hover:shadow-md transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="add_circle">add_circle</span>
+<span>新增竞赛</span>
+</button>
+</div>
+</header>
+<!-- Page Tabs -->
+<div class="px-xl pt-lg bg-surface">
+<div class="flex space-x-xl border-b border-outline-variant">
+<button class="pb-base border-b-2 border-primary text-primary font-h2 text-body-lg">竞赛列表</button>
+<button class="pb-base border-b-2 border-transparent text-on-surface-variant hover:text-on-surface font-body-lg">分类管理</button>
+<button class="pb-base border-b-2 border-transparent text-on-surface-variant hover:text-on-surface font-body-lg">审核中心</button>
+</div>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-xl space-y-lg scrollbar-hide">
+<!-- Statistics Quick View (Information First Bento) -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-gutter">
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/10">
+<p class="text-on-surface-variant font-label-caps text-label-caps uppercase mb-xs">活跃竞赛</p>
+<h3 class="text-display font-display text-primary">128</h3>
+<div class="mt-xs text-secondary font-body-md flex items-center">
+<span class="material-symbols-outlined text-[16px] mr-1" data-icon="trending_up">trending_up</span>
+<span>+12% 本月</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/10">
+<p class="text-on-surface-variant font-label-caps text-label-caps uppercase mb-xs">待审核</p>
+<h3 class="text-display font-display text-on-surface">14</h3>
+<div class="mt-xs text-on-surface-variant font-body-md flex items-center opacity-60">
+<span class="material-symbols-outlined text-[16px] mr-1" data-icon="timer">timer</span>
+<span>需在24h内处理</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/10">
+<p class="text-on-surface-variant font-label-caps text-label-caps uppercase mb-xs">总报名人数</p>
+<h3 class="text-display font-display text-on-surface">4.2k</h3>
+<div class="mt-xs text-secondary font-body-md flex items-center">
+<span class="material-symbols-outlined text-[16px] mr-1" data-icon="person_add">person_add</span>
+<span>增长稳健</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/10">
+<p class="text-on-surface-variant font-label-caps text-label-caps uppercase mb-xs">分类数量</p>
+<h3 class="text-display font-display text-on-surface">12</h3>
+<div class="mt-xs text-on-surface-variant font-body-md flex items-center opacity-60">
+<span class="material-symbols-outlined text-[16px] mr-1" data-icon="category">category</span>
+<span>涵盖主要学科</span>
+</div>
+</div>
+</section>
+<!-- Main Data Table Container -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10 overflow-hidden">
+<div class="px-md py-sm flex items-center justify-between border-b border-outline-variant/20">
+<div class="flex space-x-sm">
+<button class="bg-surface-container-low px-sm py-1.5 rounded-lg text-body-md text-on-surface border border-outline-variant/50 flex items-center space-x-xs">
+<span class="material-symbols-outlined text-[18px]" data-icon="filter_list">filter_list</span>
+<span>筛选</span>
+</button>
+<button class="bg-surface-container-low px-sm py-1.5 rounded-lg text-body-md text-on-surface border border-outline-variant/50 flex items-center space-x-xs">
+<span class="material-symbols-outlined text-[18px]" data-icon="sort">sort</span>
+<span>排序</span>
+</button>
+</div>
+</div>
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-md py-sm font-label-caps text-label-caps uppercase text-on-surface-variant">竞赛名称</th>
+<th class="px-md py-sm font-label-caps text-label-caps uppercase text-on-surface-variant">类别</th>
+<th class="px-md py-sm font-label-caps text-label-caps uppercase text-on-surface-variant">状态</th>
+<th class="px-md py-sm font-label-caps text-label-caps uppercase text-on-surface-variant">最后更新时间</th>
+<th class="px-md py-sm font-label-caps text-label-caps uppercase text-on-surface-variant text-right">操作</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-md py-md">
+<div class="flex items-center space-x-sm">
+<div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="code">code</span>
+</div>
+<span class="font-h2 text-body-md text-on-surface">ACM-ICPC 国际大学生程序设计竞赛</span>
+</div>
+</td>
+<td class="px-md py-md">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-sm py-1 rounded-full text-label-caps">计算机科学</span>
+</td>
+<td class="px-md py-md">
+<div class="flex items-center space-x-xs">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="text-body-md text-on-surface">正在报名</span>
+</div>
+</td>
+<td class="px-md py-md text-on-surface-variant text-body-md">2023-10-24 14:30</td>
+<td class="px-md py-md text-right">
+<div class="flex items-center justify-end space-x-sm opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-primary hover:bg-primary/10 p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+<button class="text-error hover:bg-error/10 p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-md py-md">
+<div class="flex items-center space-x-sm">
+<div class="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-[20px]" data-icon="calculate">calculate</span>
+</div>
+<span class="font-h2 text-body-md text-on-surface">全国大学生数学建模竞赛 (CUMCM)</span>
+</div>
+</td>
+<td class="px-md py-md">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-sm py-1 rounded-full text-label-caps">数学建模</span>
+</td>
+<td class="px-md py-md">
+<div class="flex items-center space-x-xs">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="text-body-md text-on-surface">进行中</span>
+</div>
+</td>
+<td class="px-md py-md text-on-surface-variant text-body-md">2023-10-22 09:15</td>
+<td class="px-md py-md text-right">
+<div class="flex items-center justify-end space-x-sm opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-primary hover:bg-primary/10 p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+<button class="text-error hover:bg-error/10 p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-md py-md">
+<div class="flex items-center space-x-sm">
+<div class="w-8 h-8 rounded-lg bg-outline/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-outline text-[20px]" data-icon="palette">palette</span>
+</div>
+<span class="font-h2 text-body-md text-on-surface">红点设计大奖学生组</span>
+</div>
+</td>
+<td class="px-md py-md">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-sm py-1 rounded-full text-label-caps">艺术设计</span>
+</td>
+<td class="px-md py-md">
+<div class="flex items-center space-x-xs">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<span class="text-body-md text-on-surface">已结束</span>
+</div>
+</td>
+<td class="px-md py-md text-on-surface-variant text-body-md">2023-10-20 18:00</td>
+<td class="px-md py-md text-right">
+<div class="flex items-center justify-end space-x-sm opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-primary hover:bg-primary/10 p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+<button class="text-error hover:bg-error/10 p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="px-md py-sm bg-surface-container-low/30 flex items-center justify-between">
+<p class="text-body-md text-on-surface-variant">显示 1 到 10 条，共 128 条</p>
+<div class="flex space-x-xs">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-outline-variant text-outline hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-on-primary font-body-md">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container transition-colors">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container transition-colors">3</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-outline-variant text-outline hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Category Management Preview Section -->
+<section class="space-y-md">
+<div class="flex items-center justify-between">
+<h2 class="font-h2 text-h2 text-on-background">分类管理预览</h2>
+<button class="text-primary font-body-md flex items-center hover:underline">
+                        管理全部分类
+                        <span class="material-symbols-outlined text-[18px] ml-1" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="bg-surface-container-lowest p-md rounded-xl border border-outline-variant/10 flex items-start justify-between shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex items-start space-x-md">
+<div class="w-12 h-12 rounded-xl bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[28px]" data-icon="science">science</span>
+</div>
+<div>
+<h4 class="font-h2 text-body-lg text-on-surface">自然科学</h4>
+<p class="text-body-md text-on-surface-variant opacity-70">24 个活跃竞赛</p>
+</div>
+</div>
+<button class="text-outline hover:text-primary transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl border border-outline-variant/10 flex items-start justify-between shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex items-start space-x-md">
+<div class="w-12 h-12 rounded-xl bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[28px]" data-icon="account_balance">account_balance</span>
+</div>
+<div>
+<h4 class="font-h2 text-body-lg text-on-surface">经济管理</h4>
+<p class="text-body-md text-on-surface-variant opacity-70">18 个活跃竞赛</p>
+</div>
+</div>
+<button class="text-outline hover:text-primary transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl border border-outline-variant/10 flex items-start justify-between shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex items-start space-x-md">
+<div class="w-12 h-12 rounded-xl bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[28px]" data-icon="language">language</span>
+</div>
+<div>
+<h4 class="font-h2 text-body-lg text-on-surface">人文社科</h4>
+<p class="text-body-md text-on-surface-variant opacity-70">32 个活跃竞赛</p>
+</div>
+</div>
+<button class="text-outline hover:text-primary transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Floating Action for Mobile (Hidden on Web per JSON hierarchy but added for UX completeness if responsive) -->
+<button class="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-secondary text-on-secondary rounded-full shadow-lg flex items-center justify-center z-50">
+<span class="material-symbols-outlined text-[28px]" data-icon="add">add</span>
+</button>
+</body></html>

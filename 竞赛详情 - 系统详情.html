@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#e0e3e5",
+                        "on-secondary-container": "#592600",
+                        "tertiary-container": "#49596f",
+                        "on-background": "#191c1e",
+                        "tertiary-fixed": "#d3e4fe",
+                        "secondary-fixed": "#ffdbc8",
+                        "tertiary": "#324257",
+                        "primary-container": "#0f52ba",
+                        "surface-variant": "#e0e3e5",
+                        "on-surface": "#191c1e",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#321200",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "primary": "#003c90",
+                        "surface-dim": "#d8dadc",
+                        "surface-container": "#eceef0",
+                        "on-tertiary-container": "#bfd0ea",
+                        "secondary-container": "#fb7800",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "outline-variant": "#c3c6d5",
+                        "primary-fixed-dim": "#b0c6ff",
+                        "on-primary-container": "#bcceff",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "surface-container-low": "#f2f4f6",
+                        "on-surface-variant": "#434653",
+                        "inverse-surface": "#2d3133",
+                        "on-error-container": "#93000a",
+                        "outline": "#737784",
+                        "inverse-on-surface": "#eff1f3",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "primary-fixed": "#d9e2ff",
+                        "inverse-primary": "#b0c6ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "secondary-fixed-dim": "#ffb68b",
+                        "surface-container-high": "#e6e8ea",
+                        "on-error": "#ffffff",
+                        "background": "#f7f9fb",
+                        "surface": "#f7f9fb",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#994700",
+                        "surface-tint": "#1d59c1",
+                        "on-secondary-fixed-variant": "#753400",
+                        "on-primary-fixed": "#001945",
+                        "on-primary-fixed-variant": "#00419c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "gutter": "24px",
+                        "xl": "64px",
+                        "sm": "16px",
+                        "md": "24px",
+                        "xs": "8px",
+                        "lg": "40px",
+                        "margin": "32px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Manrope"],
+                        "h1": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "display": ["Manrope"],
+                        "body-md": ["Manrope"],
+                        "label-caps": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "h2": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "h1": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "display": ["36px", {"lineHeight": "1.2", "fontWeight": "800"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; background-color: #f7f9fb; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .dialogue-ai { border-bottom-left-radius: 0 !important; }
+        .dialogue-user { border-bottom-right-radius: 0 !important; }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-on-background docked full-width top-0 shadow-sm dark:shadow-none z-50 sticky">
+<div class="flex justify-between items-center w-full px-gutter h-16 max-w-7xl mx-auto">
+<div class="text-h1 font-h1 text-primary dark:text-primary-fixed">竞赛智能咨询</div>
+<nav class="hidden md:flex items-center space-x-margin">
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="#">首页</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="#">智能咨询</a>
+<a class="font-body-md text-body-md text-primary dark:text-primary-fixed border-b-2 border-primary dark:border-primary-fixed pb-1" href="#">竞赛广场</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="#">记录统计</a>
+</nav>
+<div class="flex items-center space-x-sm">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<img alt="学生用户头像" class="w-8 h-8 rounded-full bg-surface-container-high" data-alt="A professional profile avatar of a young university student, rendered in a clean, modern digital illustration style. The character has a friendly expression and is set against a soft, blurred academic library background with Wisdom Blue and Calm Gray tones, maintaining a high-key and minimalist aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfjhV5imBCi_o7iwes6SJu9Qkb5vBHUqXqJpUEXsOZH3VYif8RMG4xZkP733at26kkuVYRqpM42seSzZiR0-5DHQCUy9jUR6bw2MmWeY3juQ2Ozr5ZdcoMPcAJlu8YKYGMrtx6UKAPJcsDaJd8SloU3oBGD9aG2i1sf5Kvw_IJudbLSrgx8oYFE1B-EZ6Z2ycjmGOaPQtAD-fr88Yom5uG5qsGzC8nEFqWSPOJvYUTM3EpViyJNLFXIwkJZsJ9XbN6VUJo0Zc2_Fiy"/>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-gutter py-lg">
+<!-- Back Button -->
+<div class="mb-sm">
+<button class="flex items-center text-on-surface-variant hover:text-primary transition-all group">
+<span class="material-symbols-outlined mr-xs group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-body-md text-body-md">返回竞赛列表</span>
+</button>
+</div>
+<!-- Competition Overview -->
+<section class="bg-surface-container-lowest rounded-xl p-md shadow-sm mb-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-md border border-outline-variant/10">
+<div class="flex-1">
+<div class="flex flex-wrap items-center gap-sm mb-xs">
+<h1 class="font-display text-display text-on-surface">2024年全国大学生数学建模竞赛</h1>
+<span class="bg-primary/10 text-primary px-sm py-1 rounded-full font-label-caps text-label-caps">国家级 A类</span>
+<span class="bg-secondary-container/10 text-secondary px-sm py-1 rounded-full font-label-caps text-label-caps">Registration Open</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface-variant">分类：基础学科 / 数学建模 / 科技创新</p>
+</div>
+<button class="bg-primary hover:bg-primary-container text-on-primary px-xl py-md rounded-xl font-h2 text-h2 flex items-center gap-sm transition-all transform hover:scale-105 active:scale-95 shadow-md">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat_spark</span>
+                去智能咨询
+            </button>
+</section>
+<!-- Main Content Layout -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Core Info Cards (Sidebar style or top bento) -->
+<div class="col-span-12 lg:col-span-4 space-y-gutter">
+<!-- Registration Card -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant/10 shadow-sm">
+<div class="flex items-center gap-sm mb-md text-secondary">
+<span class="material-symbols-outlined">calendar_today</span>
+<h3 class="font-h2 text-h2 text-on-surface">报名时间</h3>
+</div>
+<div class="space-y-sm">
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant font-body-md text-body-md">开始日期</span>
+<span class="text-on-surface font-h2 text-h2">2024-05-01</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant font-body-md text-body-md">截止日期</span>
+<span class="text-on-surface font-h2 text-h2 text-error">2024-09-10</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2 mt-md">
+<div class="bg-secondary-container h-2 rounded-full w-2/3"></div>
+</div>
+<p class="text-label-caps font-label-caps text-on-surface-variant text-right">报名进行中 (剩余42天)</p>
+</div>
+</div>
+<!-- Eligibility Card -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant/10 shadow-sm">
+<div class="flex items-center gap-sm mb-md text-primary">
+<span class="material-symbols-outlined">school</span>
+<h3 class="font-h2 text-h2 text-on-surface">面向对象</h3>
+</div>
+<div class="space-y-sm">
+<div>
+<span class="text-label-caps font-label-caps text-on-surface-variant block mb-xs">适合专业</span>
+<div class="flex flex-wrap gap-xs">
+<span class="bg-surface-container px-sm py-1 rounded text-body-md text-on-surface">数学</span>
+<span class="bg-surface-container px-sm py-1 rounded text-body-md text-on-surface">统计学</span>
+<span class="bg-surface-container px-sm py-1 rounded text-body-md text-on-surface">计算机</span>
+<span class="bg-surface-container px-sm py-1 rounded text-body-md text-on-surface">工程类</span>
+</div>
+</div>
+<div class="pt-sm">
+<span class="text-label-caps font-label-caps text-on-surface-variant block mb-xs">适合年级</span>
+<p class="text-on-surface font-body-lg text-body-lg">全日制在校大学生（本科、专科、研究生）</p>
+</div>
+</div>
+</div>
+<!-- Official Link Card -->
+<div class="bg-primary/5 rounded-xl p-md border border-primary/20 shadow-sm">
+<div class="flex items-center gap-sm mb-md text-primary">
+<span class="material-symbols-outlined">language</span>
+<h3 class="font-h2 text-h2 text-on-surface">官方通道</h3>
+</div>
+<a class="flex items-center justify-between bg-surface-container-lowest p-sm rounded-lg hover:bg-white transition-colors group" href="#">
+<span class="text-primary font-body-md text-body-md truncate">mcm.edu.cn</span>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">open_in_new</span>
+</a>
+</div>
+</div>
+<!-- Detailed Content Area -->
+<div class="col-span-12 lg:col-span-8 space-y-gutter">
+<!-- Introduction Card -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant/10 shadow-sm">
+<div class="flex items-center gap-sm mb-lg border-b border-outline-variant/10 pb-sm">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">info</span>
+<h2 class="font-h1 text-h1 text-on-surface">竞赛简介</h2>
+</div>
+<div class="font-body-lg text-body-lg text-on-surface-variant space-y-md leading-relaxed">
+<p>全国大学生数学建模竞赛（CUMCM）创办于1992年，每年举办一届，是首批列入“高校学科竞赛排行榜”的19项竞赛之一。竞赛目前已成为全国高校规模最大的基础课程学科竞赛，也是世界上规模最大的数学建模竞赛。</p>
+<img class="w-full rounded-xl object-cover h-64 my-md" data-alt="A wide-angle photograph of a spacious, modern university hall filled with teams of students intensely focused on laptops and physical models. The environment is characterized by clean architecture, abundant natural light from high windows, and a color palette of professional blues and whites. The atmosphere is academic, industrious, and high-energy, typical of a prestigious national competition." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQF1La5D4guo9vKolU-gOLrAHfCCkdCka-dJIRkrLl5_FUdnsG7lW2GiKTgG1C9FhOditZJh-4b3WE3nnyDUD8Qfpna2_nssnQWfJVkNEVHDglZdLzk5j9jgbmOPeUz69sUeCESz4drIpMHiuHSIfShZOrNfGOgmdyhNnOV2pcE1J5YnV65EG1tNAQhlj1gJ1A5jVBaKUZ_GydkDzEERlvmciBVgmd7Vd6n2ylmbFuu1LutFoBqx6YZS_MeBs1Qb3SZI8g2X6M0n_c"/>
+<p>竞赛旨在激励学生学习数学的积极性，提高学生建立数学模型和运用计算机技术解决实际问题的综合能力，鼓励广大学生踊跃参加课外科技活动，开拓知识面，培养创造精神及合作意识，推动大学数学教学体系、教学内容和方法的改革。</p>
+</div>
+</div>
+<!-- Requirements Card -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant/10 shadow-sm">
+<div class="flex items-center gap-sm mb-lg border-b border-outline-variant/10 pb-sm">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">list_alt</span>
+<h2 class="font-h1 text-h1 text-on-surface">参赛要求</h2>
+</div>
+<div class="space-y-lg">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="bg-surface-container-low p-sm rounded-lg border-l-4 border-primary">
+<h4 class="font-h2 text-h2 text-on-surface mb-xs">组队规则</h4>
+<p class="text-body-md text-on-surface-variant">每队3名学生，且必须来自同一所学校。严禁跨校组队。</p>
+</div>
+<div class="bg-surface-container-low p-sm rounded-lg border-l-4 border-secondary-container">
+<h4 class="font-h2 text-h2 text-on-surface mb-xs">指导教师</h4>
+<p class="text-body-md text-on-surface-variant">每队可设1名指导教师，负责赛前培训与组织。</p>
+</div>
+</div>
+<div class="space-y-md font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+<h3 class="font-h2 text-h2 text-on-surface">比赛形式</h3>
+<ul class="list-disc list-inside space-y-xs ml-base">
+<li>比赛采取通讯竞赛方式，参赛队在规定时间内完成一篇数学建模论文。</li>
+<li>竞赛期间学生可以查阅各种图书资料、使用计算机及网络，但严禁与队外任何人讨论。</li>
+<li>竞赛分本科组（A、B题）和专科组（C、D题），学生需根据所在层次选拔题目。</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Dialogue Teaser (AI Consultation) -->
+<div class="bg-primary/5 rounded-xl p-md border border-primary/10 relative overflow-hidden group">
+<div class="absolute -right-10 -bottom-10 opacity-5 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[160px]">smart_toy</span>
+</div>
+<h3 class="font-h1 text-h1 text-primary mb-md">还不确定是否参加？</h3>
+<div class="space-y-sm mb-lg">
+<div class="flex items-start gap-sm">
+<div class="bg-primary-container text-on-primary-container p-sm rounded-xl dialogue-ai max-w-md shadow-sm">
+<p class="font-body-md text-body-md">你好！我是你的竞赛智能助手。我可以根据你的专业背景和能力，为你分析本届数学建模竞赛的获奖概率。</p>
+</div>
+</div>
+<div class="flex items-start justify-end gap-sm">
+<div class="bg-surface-container-high text-on-surface p-sm rounded-xl dialogue-user max-w-md shadow-sm">
+<p class="font-body-md text-body-md">我想知道对于非数学专业的学生，该如何准备建模部分？</p>
+</div>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary py-sm rounded-xl font-h2 text-h2 hover:bg-primary-container transition-colors relative z-10">
+                        开启专属咨询对话
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<footer class="bg-surface-container-lowest py-xl border-t border-outline-variant/10 mt-xl">
+<div class="max-w-7xl mx-auto px-gutter text-center">
+<div class="text-h1 font-h1 text-primary-fixed-variant mb-sm">竞赛智能咨询</div>
+<p class="text-on-surface-variant font-body-md text-body-md">助力每一位学子在竞赛中脱颖而出</p>
+<div class="mt-lg flex justify-center gap-margin text-on-surface-variant">
+<a class="hover:text-primary transition-colors font-label-caps text-label-caps" href="#">关于我们</a>
+<a class="hover:text-primary transition-colors font-label-caps text-label-caps" href="#">隐私政策</a>
+<a class="hover:text-primary transition-colors font-label-caps text-label-caps" href="#">用户协议</a>
+</div>
+</div>
+</footer>
+</body></html>

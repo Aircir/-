@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+        /* Dialogue Bubble Specificity */
+        .bubble-ai {
+            border-bottom-left-radius: 0 !important;
+        }
+        .bubble-user {
+            border-bottom-right-radius: 0 !important;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#e0e3e5",
+                        "on-secondary-container": "#592600",
+                        "tertiary-container": "#49596f",
+                        "on-background": "#191c1e",
+                        "tertiary-fixed": "#d3e4fe",
+                        "secondary-fixed": "#ffdbc8",
+                        "tertiary": "#324257",
+                        "primary-container": "#0f52ba",
+                        "surface-variant": "#e0e3e5",
+                        "on-surface": "#191c1e",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#321200",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "primary": "#003c90",
+                        "surface-dim": "#d8dadc",
+                        "surface-container": "#eceef0",
+                        "on-tertiary-container": "#bfd0ea",
+                        "secondary-container": "#fb7800",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "outline-variant": "#c3c6d5",
+                        "primary-fixed-dim": "#b0c6ff",
+                        "on-primary-container": "#bcceff",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "surface-container-low": "#f2f4f6",
+                        "on-surface-variant": "#434653",
+                        "inverse-surface": "#2d3133",
+                        "on-error-container": "#93000a",
+                        "outline": "#737784",
+                        "inverse-on-surface": "#eff1f3",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "primary-fixed": "#d9e2ff",
+                        "inverse-primary": "#b0c6ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "secondary-fixed-dim": "#ffb68b",
+                        "surface-container-high": "#e6e8ea",
+                        "on-error": "#ffffff",
+                        "background": "#f7f9fb",
+                        "surface": "#f7f9fb",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#994700",
+                        "surface-tint": "#1d59c1",
+                        "on-secondary-fixed-variant": "#753400",
+                        "on-primary-fixed": "#001945",
+                        "on-primary-fixed-variant": "#00419c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "8px",
+                        "xl": "12px",
+                        "2xl": "16px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "gutter": "24px",
+                        "xl": "64px",
+                        "sm": "16px",
+                        "md": "24px",
+                        "xs": "8px",
+                        "lg": "40px",
+                        "margin": "32px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Manrope"],
+                        "h1": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "display": ["Manrope"],
+                        "body-md": ["Manrope"],
+                        "label-caps": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "h2": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "h1": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "display": ["36px", {"lineHeight": "1.2", "fontWeight": "800"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-surface-container-lowest shadow-sm sticky top-0 z-50">
+<div class="flex justify-between items-center w-full px-gutter h-16 max-w-7xl mx-auto">
+<div class="flex items-center gap-xl">
+<span class="text-h1 font-h1 text-primary">竞赛智能咨询</span>
+<nav class="hidden md:flex gap-md">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">首页</a>
+<a class="font-body-md text-body-md text-primary border-b-2 border-primary pb-1" href="#">智能咨询</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">竞赛广场</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">记录统计</a>
+</nav>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-xs text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">notifications</span></button>
+<button class="p-xs text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">settings</span></button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant">
+<img alt="学生用户头像" class="w-full h-full object-cover" data-alt="A professional close-up portrait of a young student in a modern workspace. The lighting is soft and natural, emphasizing a bright and academic environment. The style is minimalist with a clean, high-key aesthetic using a palette of soft whites and Wisdom Blue accents. The overall mood is focused and intelligent." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAT8YCr2jabQuWTcTxHMGu0Et9Vw6f__XGUATXS8N8ACtwlTV4vvXHQPYWOLumKGvlNK1FRJChWkVmrH54q_AqEbO8_8hgHuHYKQ67OQV2lv3Z9eylGnnVhqM7XDsCM36dFOoXErTYAlf2587os7P3sDFgUZXuvks4xB9c5TfEV0NQXX1YIbnnFn4qEAZFABxvWiem66G8MuOzNGGpvZCLUugANQdZot9j6hPhci3CrSeh23vODm64fbxdGFzd3EBhbWkWzFJJG0NHf"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="flex-1 max-w-7xl mx-auto w-full grid grid-cols-12 gap-gutter px-gutter py-md overflow-hidden h-[calc(100vh-64px)]">
+<!-- Conversation Area -->
+<div class="col-span-12 lg:col-span-8 flex flex-col h-full overflow-hidden bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/30">
+<!-- Scrollable Dialogue Container -->
+<div class="flex-1 overflow-y-auto p-md space-y-md">
+<!-- AI Welcome Message -->
+<div class="flex items-start gap-sm">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container shrink-0">
+<span class="material-symbols-outlined text-[20px]">smart_toy</span>
+</div>
+<div class="max-w-[85%] bg-surface-container p-md rounded-2xl text-on-surface font-body-md bubble-ai">
+                        你好！我是你的竞赛智能助手。关于“2024年全国大学生数学建模竞赛”，你有什么想了解的吗？我可以为你分析含金量、备赛建议或者组队策略。
+                    </div>
+</div>
+<!-- User Message -->
+<div class="flex items-start gap-sm justify-end">
+<div class="max-w-[85%] bg-surface-container-high p-md rounded-2xl text-on-surface font-body-md bubble-user">
+                        这个竞赛的获奖率高吗？
+                    </div>
+<div class="w-8 h-8 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-container shrink-0">
+<span class="material-symbols-outlined text-[20px]">person</span>
+</div>
+</div>
+<!-- AI SSE Streaming Message -->
+<div class="flex items-start gap-sm">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container shrink-0">
+<span class="material-symbols-outlined text-[20px]">smart_toy</span>
+</div>
+<div class="max-w-[85%] bg-primary-container/10 p-md rounded-2xl text-on-surface font-body-md bubble-ai border border-primary/20">
+<p class="mb-sm">正在根据往年数据为您计算获奖率比例...</p>
+<div class="flex items-center gap-xs text-primary font-label-caps">
+<span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+<span class="w-2 h-2 bg-primary rounded-full animate-pulse delay-75"></span>
+<span class="w-2 h-2 bg-primary rounded-full animate-pulse delay-150"></span>
+<span class="ml-xs">正在生成中...</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Interaction & Input Area -->
+<div class="p-md bg-surface-container-low border-t border-outline-variant/30">
+<!-- Example Questions -->
+<div class="flex flex-wrap gap-xs mb-md">
+<button class="px-sm py-xs bg-surface-container-lowest border border-outline-variant rounded-full text-body-md text-on-surface-variant hover:border-primary hover:text-primary transition-all">这个竞赛含金量高吗？</button>
+<button class="px-sm py-xs bg-surface-container-lowest border border-outline-variant rounded-full text-body-md text-on-surface-variant hover:border-primary hover:text-primary transition-all">跨专业可以参加吗？</button>
+<button class="px-sm py-xs bg-surface-container-lowest border border-outline-variant rounded-full text-body-md text-on-surface-variant hover:border-primary hover:text-primary transition-all">推荐几本参考书？</button>
+</div>
+<!-- Input Field Container -->
+<div class="relative bg-surface-container-lowest rounded-2xl border border-outline-variant focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/20 transition-all p-xs">
+<div class="flex items-center px-sm gap-sm border-b border-outline-variant/20 pb-xs mb-xs">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary text-[18px]">bolt</span>
+<select class="bg-transparent border-none text-label-caps font-label-caps text-primary focus:ring-0 p-0 cursor-pointer">
+<option>流式问答</option>
+<option>普通问答</option>
+</select>
+</div>
+<div class="h-4 w-[1px] bg-outline-variant"></div>
+<span class="text-label-caps font-label-caps text-on-surface-variant">上下文已关联: 数学建模2024</span>
+</div>
+<div class="flex items-end gap-xs px-sm pb-sm">
+<textarea class="flex-1 bg-transparent border-none focus:ring-0 p-0 text-body-md text-on-surface resize-none placeholder:text-outline" placeholder="输入您的问题，如：如何高效组建竞赛团队？" rows="1"></textarea>
+<button class="bg-primary text-on-primary w-10 h-10 rounded-xl flex items-center justify-center hover:bg-on-primary-fixed transition-colors">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Sidebar / Context Area -->
+<aside class="hidden lg:flex lg:col-span-4 flex-col gap-md">
+<!-- Competition Info Card -->
+<div class="bg-surface-container-lowest rounded-2xl p-md border border-outline-variant/30 shadow-sm">
+<h3 class="font-h2 text-h2 text-on-surface mb-md flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary">info</span>
+                    当前咨询背景
+                </h3>
+<div class="aspect-video w-full rounded-xl bg-surface-container overflow-hidden mb-md">
+<img alt="竞赛背景封面" class="w-full h-full object-cover" data-alt="A sophisticated data visualization chart on a high-tech digital screen displaying mathematical trends and competition statistics. The environment is a modern university laboratory with soft ambient lighting in Wisdom Blue and Calm Gray tones. The visual style is crisp and academic, emphasizing professional digital scholarship and technical precision." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxi54LvZIjHZcQNnOBHr-ConAoYE2QPwgfkmKnVptQ5ZUqZ105rMsddqL_N0Wa8Yd-FlxmtYaf_AS1FlAliOCTe3vioQezC4VylSsmcDk0JHSd9D1r3TEqZN7GwxaO8OVjxHgPnFP9yOgnIGhVLqKeUs7e47CDnA2A0R-2XyFYFjOQd_5LmgKskUk4mSdRcAnlBcu-NjxzKdZ6lmxXJ_6Np4TnsUO7_la2VFmMN0NbfcId-hdXFaCFl8s8cuulmHCf4zmF4finfld6"/>
+</div>
+<div class="space-y-sm">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-xs">竞赛名称</span>
+<p class="font-body-md text-body-md text-on-surface">2024年全国大学生数学建模竞赛 (CUMCM)</p>
+</div>
+<div class="flex gap-sm">
+<div class="flex-1">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-xs">竞赛级别</span>
+<span class="inline-flex items-center px-sm py-1 bg-primary/10 text-primary text-label-caps font-label-caps rounded-full">国家级 A类</span>
+</div>
+<div class="flex-1">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-xs">状态</span>
+<span class="inline-flex items-center px-sm py-1 bg-secondary-container/20 text-on-secondary-container text-label-caps font-label-caps rounded-full">报名进行中</span>
+</div>
+</div>
+</div>
+<div class="mt-md pt-md border-t border-outline-variant/30">
+<button class="w-full py-sm bg-surface-container-high text-on-surface font-h2 text-h2 rounded-xl hover:bg-surface-container-highest transition-all flex items-center justify-center gap-xs">
+                        查看完整竞赛详情
+                        <span class="material-symbols-outlined">open_in_new</span>
+</button>
+</div>
+</div>
+<!-- Stats Card -->
+<div class="bg-surface-container-lowest rounded-2xl p-md border border-outline-variant/30 shadow-sm flex-1">
+<h3 class="font-h2 text-h2 text-on-surface mb-md flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary">analytics</span>
+                    往年咨询热度
+                </h3>
+<div class="space-y-md">
+<div class="flex justify-between items-end gap-xs h-32 px-md">
+<div class="w-full bg-surface-container rounded-t-lg relative group h-[40%]">
+<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-xs bg-inverse-surface text-inverse-on-surface text-label-caps px-xs py-1 rounded hidden group-hover:block">1.2k</div>
+</div>
+<div class="w-full bg-surface-container rounded-t-lg relative group h-[65%]"></div>
+<div class="w-full bg-primary rounded-t-lg relative group h-[90%]">
+<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-xs bg-inverse-surface text-inverse-on-surface text-label-caps px-xs py-1 rounded hidden group-hover:block">2.8k</div>
+</div>
+<div class="w-full bg-surface-container rounded-t-lg relative group h-[55%]"></div>
+<div class="w-full bg-surface-container rounded-t-lg relative group h-[75%]"></div>
+</div>
+<div class="flex justify-between text-label-caps font-label-caps text-on-surface-variant">
+<span>Q1</span>
+<span>Q2</span>
+<span>Q3 (当前)</span>
+<span>Q4</span>
+<span>平均</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                        当前竞赛正处于报名高峰期，咨询量较上季度增长了 <span class="text-secondary font-bold">120%</span>。建议尽早确定选题方向。
+                    </p>
+</div>
+</div>
+</aside>
+</main>
+<!-- Contextual FAB (Hidden on mobile as per logic, or only for core action) -->
+<button class="md:hidden fixed bottom-gutter right-gutter w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center z-50">
+<span class="material-symbols-outlined">chat_bubble</span>
+</button>
+</body></html>

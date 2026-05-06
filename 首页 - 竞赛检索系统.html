@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-highest": "#e0e3e5",
+                    "on-secondary-container": "#592600",
+                    "tertiary-container": "#49596f",
+                    "on-background": "#191c1e",
+                    "tertiary-fixed": "#d3e4fe",
+                    "secondary-fixed": "#ffdbc8",
+                    "tertiary": "#324257",
+                    "primary-container": "#0f52ba",
+                    "surface-variant": "#e0e3e5",
+                    "on-surface": "#191c1e",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed": "#321200",
+                    "on-secondary": "#ffffff",
+                    "surface-bright": "#f7f9fb",
+                    "primary": "#003c90",
+                    "surface-dim": "#d8dadc",
+                    "surface-container": "#eceef0",
+                    "on-tertiary-container": "#bfd0ea",
+                    "secondary-container": "#fb7800",
+                    "tertiary-fixed-dim": "#b7c8e1",
+                    "outline-variant": "#c3c6d5",
+                    "primary-fixed-dim": "#b0c6ff",
+                    "on-primary-container": "#bcceff",
+                    "on-tertiary-fixed": "#0b1c30",
+                    "surface-container-low": "#f2f4f6",
+                    "on-surface-variant": "#434653",
+                    "inverse-surface": "#2d3133",
+                    "on-error-container": "#93000a",
+                    "outline": "#737784",
+                    "inverse-on-surface": "#eff1f3",
+                    "error-container": "#ffdad6",
+                    "on-primary": "#ffffff",
+                    "primary-fixed": "#d9e2ff",
+                    "inverse-primary": "#b0c6ff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed-variant": "#38485d",
+                    "secondary-fixed-dim": "#ffb68b",
+                    "surface-container-high": "#e6e8ea",
+                    "on-error": "#ffffff",
+                    "background": "#f7f9fb",
+                    "surface": "#f7f9fb",
+                    "on-tertiary": "#ffffff",
+                    "secondary": "#994700",
+                    "surface-tint": "#1d59c1",
+                    "on-secondary-fixed-variant": "#753400",
+                    "on-primary-fixed": "#001945",
+                    "on-primary-fixed-variant": "#00419c"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "gutter": "24px",
+                    "xl": "64px",
+                    "sm": "16px",
+                    "md": "24px",
+                    "xs": "8px",
+                    "lg": "40px",
+                    "margin": "32px"
+            },
+            "fontFamily": {
+                    "h2": ["Manrope"],
+                    "h1": ["Manrope"],
+                    "body-lg": ["Manrope"],
+                    "display": ["Manrope"],
+                    "body-md": ["Manrope"],
+                    "label-caps": ["Manrope"]
+            },
+            "fontSize": {
+                    "h2": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "h1": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "display": ["36px", {"lineHeight": "1.2", "fontWeight": "800"}],
+                    "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #f7f9fb;
+            font-family: 'Manrope', sans-serif;
+        }
+        .ai-glow:focus-within {
+            box-shadow: 0 0 12px rgba(0, 60, 144, 0.15);
+            border-color: #003c90;
+        }
+    </style>
+</head>
+<body class="text-on-background">
+<!-- TopNavBar Shell -->
+<header class="bg-surface-container-lowest dark:bg-inverse-surface shadow-sm docked full-width top-0 sticky z-50">
+<div class="flex justify-between items-center w-full px-gutter h-16 max-w-7xl mx-auto">
+<div class="flex items-center gap-xs">
+<span class="text-h1 font-h1 text-primary dark:text-primary-fixed">竞赛智能咨询</span>
+</div>
+<nav class="hidden md:flex items-center space-x-margin h-full">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">首页</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">智能咨询</a>
+<a class="font-body-md text-body-md text-primary border-b-2 border-primary pb-1 transition-colors" href="#">竞赛广场</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">记录统计</a>
+</nav>
+<div class="flex items-center gap-sm">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary" data-icon="settings">settings</button>
+<img alt="学生用户头像" class="w-10 h-10 rounded-full object-cover border border-outline-variant" data-alt="A professional close-up portrait of a young male student in a clean, modern educational setting. The lighting is bright and optimistic, reflecting a high-key academic aesthetic. He wears a neutral-toned casual sweater, and the background is a softly blurred modern campus interior with Wisdom Blue accents and minimalist architectural lines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcRJuSE1_VboNcypjDjL72inBdpUKtIcJAsS9ZkKj4M1qkNdDciTokFGJI1cxPwJq1IvEAx5_Cifqdw1g-BzlD3YXAYbl6k6lEtILgrScmQeD3u4F5c2YwrnlliqjuMkkR_P7zPAuFeFV7EC_2vddhBrzuK6ZKe9_jsXlQ7Yem61RyeJ7IIao95iz4iR8iny6hedm8tTKBpNap_WXrV9nJJ6pjQRiYg6HFrz5ltdQNY2AGOp_mIob2VrkCX4UBWGDCNSukEtj6DhNz"/>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-gutter py-lg space-y-xl">
+<!-- Welcome Section -->
+<section class="text-center space-y-xs max-w-2xl mx-auto">
+<h1 class="font-display text-display text-on-surface">探索你的学术潜力</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                连接全球顶尖赛事，利用AI助你从报名到获奖。输入你的需求，让我们为你推荐最适合的竞赛。
+            </p>
+</section>
+<!-- Natural Language Search Bar -->
+<section class="max-w-3xl mx-auto">
+<div class="ai-glow bg-surface-container-lowest border border-outline-variant rounded-xl p-xs flex items-center transition-all duration-300">
+<div class="pl-md pr-sm flex items-center text-primary">
+<span class="material-symbols-outlined text-[28px]" data-icon="psychology">psychology</span>
+</div>
+<input aria-label="自然语言导航输入" class="flex-grow bg-transparent border-none focus:ring-0 font-body-lg text-on-surface py-md" placeholder="输入指令，如：搜索人工智能类竞赛" type="text"/>
+<button class="bg-primary text-on-primary px-lg py-sm rounded-lg font-h2 hover:bg-primary-container transition-all mx-xs">
+                    搜索
+                </button>
+</div>
+</section>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Sidebar: Filter Area -->
+<aside class="md:col-span-3 space-y-md">
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant/30 shadow-sm">
+<div class="flex items-center gap-xs mb-sm">
+<span class="material-symbols-outlined text-primary" data-icon="filter_list">filter_list</span>
+<h3 class="font-h2 text-h2">精细筛选</h3>
+</div>
+<div class="space-y-sm">
+<!-- Keyowrd -->
+<div class="space-y-xs">
+<label class="font-label-caps text-label-caps text-outline">关键词</label>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-sm py-xs text-body-md focus:outline-primary" placeholder="赛事名称关键词" type="text"/>
+</div>
+<!-- Major -->
+<div class="space-y-xs">
+<label class="font-label-caps text-label-caps text-outline">专业领域</label>
+<select class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-sm py-xs text-body-md">
+<option>全部专业</option>
+<option>人工智能</option>
+<option>数学建模</option>
+<option>艺术设计</option>
+<option>创新创业</option>
+</select>
+</div>
+<!-- Status -->
+<div class="space-y-xs">
+<label class="font-label-caps text-label-caps text-outline">报名状态</label>
+<div class="flex flex-wrap gap-xs">
+<button class="px-sm py-xs bg-primary text-on-primary rounded-full text-body-md">全部</button>
+<button class="px-sm py-xs bg-surface-container-high text-on-surface-variant rounded-full text-body-md hover:bg-outline-variant">报名中</button>
+<button class="px-sm py-xs bg-surface-container-high text-on-surface-variant rounded-full text-body-md hover:bg-outline-variant">预热中</button>
+</div>
+</div>
+<!-- Level -->
+<div class="space-y-xs">
+<label class="font-label-caps text-label-caps text-outline">赛事级别</label>
+<div class="grid grid-cols-2 gap-xs">
+<label class="flex items-center gap-xs text-body-md cursor-pointer">
+<input class="rounded text-primary focus:ring-primary" type="checkbox"/> 国级
+                                </label>
+<label class="flex items-center gap-xs text-body-md cursor-pointer">
+<input class="rounded text-primary focus:ring-primary" type="checkbox"/> 省级
+                                </label>
+<label class="flex items-center gap-xs text-body-md cursor-pointer">
+<input class="rounded text-primary focus:ring-primary" type="checkbox"/> 国际
+                                </label>
+<label class="flex items-center gap-xs text-body-md cursor-pointer">
+<input class="rounded text-primary focus:ring-primary" type="checkbox"/> 校级
+                                </label>
+</div>
+</div>
+</div>
+</div>
+<!-- Hot Competitions Sidebar (Mobile bottom, Desktop sidebar) -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant/30 shadow-sm">
+<div class="flex items-center gap-xs mb-sm">
+<span class="material-symbols-outlined text-secondary" data-icon="local_fire_department">local_fire_department</span>
+<h3 class="font-h2 text-h2">热门推荐</h3>
+</div>
+<ul class="space-y-sm">
+<li class="group cursor-pointer">
+<p class="text-body-md font-semibold text-on-surface group-hover:text-primary transition-colors">2024 全国大学生数学建模竞赛</p>
+<p class="text-label-caps text-outline">热度：24.5k 参与</p>
+</li>
+<hr class="border-surface-container"/>
+<li class="group cursor-pointer">
+<p class="text-body-md font-semibold text-on-surface group-hover:text-primary transition-colors">Google Solution Challenge</p>
+<p class="text-label-caps text-outline">热度：18.2k 参与</p>
+</li>
+<hr class="border-surface-container"/>
+<li class="group cursor-pointer">
+<p class="text-body-md font-semibold text-on-surface group-hover:text-primary transition-colors">“互联网+”大学生创新创业大赛</p>
+<p class="text-label-caps text-outline">热度：45.9k 参与</p>
+</li>
+</ul>
+</div>
+</aside>
+<!-- Main Content: Competition List Area -->
+<div class="md:col-span-9 space-y-md">
+<div class="flex justify-between items-end">
+<h2 class="font-h1 text-h1 text-on-surface">检索结果 (24)</h2>
+<div class="flex items-center gap-xs text-body-md text-on-surface-variant">
+<span>排序：</span>
+<select class="bg-transparent border-none focus:ring-0 font-semibold text-primary">
+<option>最热推荐</option>
+<option>截止日期</option>
+<option>最新发布</option>
+</select>
+</div>
+</div>
+<!-- Competition Cards Bento Grid-like Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-md">
+<!-- Competition Card 1: Registration Open -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant/30 shadow-sm hover:shadow-md transition-all group">
+<div class="flex justify-between items-start mb-sm">
+<span class="bg-secondary-container text-on-secondary px-sm py-base rounded-full font-label-caps text-label-caps">报名中</span>
+<span class="material-symbols-outlined text-outline group-hover:text-primary cursor-pointer" data-icon="bookmark">bookmark</span>
+</div>
+<h4 class="font-h1 text-h1 text-on-surface mb-xs">ICPC 国际大学生程序设计竞赛</h4>
+<div class="flex gap-xs mb-md">
+<span class="px-xs py-[2px] bg-surface-container text-on-surface-variant text-label-caps rounded">计算机</span>
+<span class="px-xs py-[2px] bg-surface-container text-on-surface-variant text-label-caps rounded">国际级</span>
+</div>
+<div class="flex items-center justify-between mt-auto pt-md border-t border-surface-container">
+<div class="flex items-center gap-xs text-body-md text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]" data-icon="calendar_today">calendar_today</span>
+<span>截止日期: 2024-10-15</span>
+</div>
+<button class="text-primary font-h2 flex items-center gap-xs group/btn">
+                                详情 <span class="material-symbols-outlined text-[18px] group-hover/btn:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Competition Card 2: Ongoing -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant/30 shadow-sm hover:shadow-md transition-all group">
+<div class="flex justify-between items-start mb-sm">
+<span class="bg-primary text-on-primary px-sm py-base rounded-full font-label-caps text-label-caps">进行中</span>
+<span class="material-symbols-outlined text-outline group-hover:text-primary cursor-pointer" data-icon="bookmark">bookmark</span>
+</div>
+<h4 class="font-h1 text-h1 text-on-surface mb-xs">蓝桥杯全国软件和信息技术人才大赛</h4>
+<div class="flex gap-xs mb-md">
+<span class="px-xs py-[2px] bg-surface-container text-on-surface-variant text-label-caps rounded">软件开发</span>
+<span class="px-xs py-[2px] bg-surface-container text-on-surface-variant text-label-caps rounded">国家级</span>
+</div>
+<div class="flex items-center justify-between mt-auto pt-md border-t border-surface-container">
+<div class="flex items-center gap-xs text-body-md text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]" data-icon="calendar_today">calendar_today</span>
+<span>截止日期: 2024-11-01</span>
+</div>
+<button class="text-primary font-h2 flex items-center gap-xs group/btn">
+                                详情 <span class="material-symbols-outlined text-[18px] group-hover/btn:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Competition Card 3: Ended -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant/30 shadow-sm opacity-80 group">
+<div class="flex justify-between items-start mb-sm">
+<span class="bg-surface-container-highest text-on-surface-variant px-sm py-base rounded-full font-label-caps text-label-caps">已结束</span>
+<span class="material-symbols-outlined text-outline" data-icon="bookmark">bookmark</span>
+</div>
+<h4 class="font-h1 text-h1 text-on-surface mb-xs">2024 全球人工智能创意挑战赛</h4>
+<div class="flex gap-xs mb-md">
+<span class="px-xs py-[2px] bg-surface-container text-on-surface-variant text-label-caps rounded">人工智能</span>
+<span class="px-xs py-[2px] bg-surface-container text-on-surface-variant text-label-caps rounded">国际级</span>
+</div>
+<div class="flex items-center justify-between mt-auto pt-md border-t border-surface-container">
+<div class="flex items-center gap-xs text-body-md text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]" data-icon="calendar_today">calendar_today</span>
+<span>截止日期: 2024-08-20</span>
+</div>
+<button class="text-outline font-h2 flex items-center gap-xs">
+                                详情 <span class="material-symbols-outlined text-[18px]" data-icon="lock">lock</span>
+</button>
+</div>
+</div>
+<!-- Competition Card 4: Promotional/High Profile -->
+<div class="bg-primary-container text-on-primary-container rounded-xl p-md shadow-lg relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-md opacity-20 transform translate-x-4 -translate-y-4">
+<span class="material-symbols-outlined text-[120px]" data-icon="emoji_events">emoji_events</span>
+</div>
+<div class="flex justify-between items-start mb-sm relative z-10">
+<span class="bg-secondary text-on-secondary px-sm py-base rounded-full font-label-caps text-label-caps">重磅推荐</span>
+<span class="material-symbols-outlined text-on-primary-container/60 hover:text-white cursor-pointer" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<h4 class="font-h1 text-h1 mb-xs relative z-10">第九届“创客中国”创业大赛</h4>
+<p class="text-body-md mb-md relative z-10 opacity-90">国家级双创顶级赛事，高达百万奖金，提供孵化落地支持。</p>
+<div class="flex items-center justify-between mt-auto pt-md border-t border-white/20 relative z-10">
+<div class="flex items-center gap-xs text-body-md">
+<span class="material-symbols-outlined text-[18px]" data-icon="group">group</span>
+<span>剩余席位充足</span>
+</div>
+<button class="bg-white text-primary px-lg py-xs rounded-lg font-h2 hover:bg-opacity-90 transition-all">
+                                立即报名
+                            </button>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="flex justify-center items-center gap-sm pt-xl">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-on-primary">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container transition-colors">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container transition-colors">3</button>
+<span class="text-on-surface-variant px-xs">...</span>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Success Stats Visual -->
+<section class="max-w-7xl mx-auto px-gutter py-xl">
+<div class="bg-surface-container rounded-3xl p-xl grid grid-cols-2 md:grid-cols-4 gap-lg text-center">
+<div class="space-y-xs">
+<p class="font-display text-display text-primary">5,000+</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant">入库赛事</p>
+</div>
+<div class="space-y-xs">
+<p class="font-display text-display text-primary">120k</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant">活跃学生</p>
+</div>
+<div class="space-y-xs">
+<p class="font-display text-display text-primary">85%</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant">获奖提升率</p>
+</div>
+<div class="space-y-xs">
+<p class="font-display text-display text-primary">24/7</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant">AI 咨询支持</p>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-surface-container-highest mt-xl py-xl">
+<div class="max-w-7xl mx-auto px-gutter grid grid-cols-1 md:grid-cols-3 gap-xl">
+<div class="space-y-md">
+<h2 class="font-h1 text-h1 text-primary">竞赛智能咨询</h2>
+<p class="text-body-md text-on-surface-variant">
+                    致力于为每一位学子提供最精准的赛事导航与备赛指导，让每一次努力都有回响。
+                </p>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<div class="space-y-sm">
+<h4 class="font-h2 text-h2">资源</h4>
+<ul class="space-y-xs text-body-md text-on-surface-variant">
+<li><a class="hover:text-primary" href="#">赛事分类</a></li>
+<li><a class="hover:text-primary" href="#">备赛锦囊</a></li>
+<li><a class="hover:text-primary" href="#">获奖案例</a></li>
+</ul>
+</div>
+<div class="space-y-sm">
+<h4 class="font-h2 text-h2">支持</h4>
+<ul class="space-y-xs text-body-md text-on-surface-variant">
+<li><a class="hover:text-primary" href="#">在线咨询</a></li>
+<li><a class="hover:text-primary" href="#">常见问题</a></li>
+<li><a class="hover:text-primary" href="#">意见反馈</a></li>
+</ul>
+</div>
+</div>
+<div class="space-y-sm">
+<h4 class="font-h2 text-h2">关注我们</h4>
+<div class="flex gap-md">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer" data-icon="language">language</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer" data-icon="mail">mail</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer" data-icon="share">share</span>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto px-gutter mt-xl pt-md border-t border-outline-variant/30 text-center text-label-caps text-outline">
+            © 2024 竞赛智能咨询平台. 保留所有权利.
+        </div>
+</footer>
+</body></html>
