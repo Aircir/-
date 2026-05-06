@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>大学生竞赛智能咨询系统 - 演示入口</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <style>
+        body {
+            font-family: "Manrope", sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(15, 82, 186, 0.16), transparent 34%),
+                radial-gradient(circle at bottom right, rgba(251, 120, 0, 0.14), transparent 30%),
+                #f7f9fb;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-900">
+    <main class="mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-6 py-12">
+        <div class="mx-auto max-w-3xl text-center">
+            <p class="mb-4 inline-flex rounded-full border border-slate-300 bg-white/70 px-4 py-1 text-sm font-semibold text-slate-600 shadow-sm backdrop-blur">
+                毕业设计演示入口
+            </p>
+            <h1 class="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+                大学生竞赛智能咨询系统
+            </h1>
+            <p class="mt-4 text-lg leading-8 text-slate-600">
+                当前版本先完成演示壳层联动，你可以从这里进入学生端和管理员端，顺着检索、详情、咨询、记录与统计这条主链路进行演示。
+            </p>
+        </div>
+
+        <div class="mt-12 grid gap-6 lg:grid-cols-2">
+            <section class="rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-xl shadow-slate-200/70 backdrop-blur">
+                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-800">学生端</p>
+                <h2 class="mt-3 text-3xl font-bold text-slate-900">从竞赛检索进入完整使用链路</h2>
+                <p class="mt-4 text-base leading-7 text-slate-600">
+                    适合答辩时演示“查竞赛、看详情、做智能咨询、看记录统计”的完整闭环。
+                </p>
+                <div class="mt-6 flex flex-wrap gap-3">
+                    <a class="inline-flex items-center rounded-xl bg-blue-800 px-5 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700" href="pages/home.html">
+                        进入首页 / 检索页
+                    </a>
+                    <a class="inline-flex items-center rounded-xl border border-slate-300 px-5 py-3 text-base font-semibold text-slate-700 transition hover:border-blue-800 hover:text-blue-800" href="pages/ai-consult.html">
+                        直接打开智能咨询
+                    </a>
+                </div>
+                <ul class="mt-8 space-y-3 text-sm text-slate-600">
+                    <li>1. 首页筛选或自然语言输入</li>
+                    <li>2. 进入竞赛详情页</li>
+                    <li>3. 跳转智能咨询页</li>
+                    <li>4. 查看记录与统计页</li>
+                </ul>
+            </section>
+
+            <section class="rounded-3xl border border-slate-200 bg-slate-950 p-8 text-white shadow-xl shadow-slate-300/40">
+                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-orange-300">管理员端</p>
+                <h2 class="mt-3 text-3xl font-bold">从后台维护数据进入前台联动</h2>
+                <p class="mt-4 text-base leading-7 text-slate-300">
+                    适合展示后台录入竞赛数据、切回前台查看展示效果和后续咨询场景。
+                </p>
+                <div class="mt-6 flex flex-wrap gap-3">
+                    <a class="inline-flex items-center rounded-xl bg-orange-500 px-5 py-3 text-base font-semibold text-slate-950 shadow-sm transition hover:bg-orange-400" href="pages/admin-competition-management.html">
+                        进入管理后台
+                    </a>
+                    <a class="inline-flex items-center rounded-xl border border-slate-700 px-5 py-3 text-base font-semibold text-slate-100 transition hover:border-orange-300 hover:text-orange-200" href="pages/records-statistics.html">
+                        查看记录与统计
+                    </a>
+                </div>
+                <ul class="mt-8 space-y-3 text-sm text-slate-300">
+                    <li>1. 后台查看竞赛管理工作台</li>
+                    <li>2. 切到前台首页查看竞赛入口</li>
+                    <li>3. 打通咨询与统计的演示收口</li>
+                </ul>
+            </section>
+        </div>
+
+        <div class="mt-10 rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+            <h3 class="text-lg font-bold text-slate-900">当前已打通的演示壳层</h3>
+            <div class="mt-4 flex flex-wrap gap-3 text-sm text-slate-600">
+                <span class="rounded-full bg-slate-100 px-4 py-2">首页 / 竞赛检索</span>
+                <span class="rounded-full bg-slate-100 px-4 py-2">竞赛详情</span>
+                <span class="rounded-full bg-slate-100 px-4 py-2">智能咨询</span>
+                <span class="rounded-full bg-slate-100 px-4 py-2">记录与统计</span>
+                <span class="rounded-full bg-slate-100 px-4 py-2">后台竞赛管理</span>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
