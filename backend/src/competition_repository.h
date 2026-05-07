@@ -1,5 +1,7 @@
 #pragma once
 
+#include "mysql_client.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <optional>
@@ -74,7 +76,7 @@ struct CompetitionFilter {
 
 class CompetitionRepository {
 public:
-    CompetitionRepository();
+    explicit CompetitionRepository(MySqlClient* database_client = nullptr);
 
     std::vector<Competition> list(const CompetitionFilter& filter) const;
     std::optional<Competition> find_by_id(std::uint64_t competition_id, bool include_hidden = false) const;
@@ -91,13 +93,23 @@ public:
     bool delete_competition(std::uint64_t competition_id, std::string& error_message);
 
 private:
+    MySqlClient* database_client_ = nullptr;
+    bool using_mysql_ = false;
     std::vector<Category> categories_;
     std::vector<Competition> competitions_;
     std::uint64_t next_category_id_ = 1;
     std::uint64_t next_competition_id_ = 1;
+    std::string categories_file_path_;
+    std::string competitions_file_path_;
 
     static std::string current_timestamp();
 
+    void seed_defaults();
+    bool ensure_mysql_schema();
+    bool seed_mysql_defaults();
+    bool load_from_mysql();
+    bool load_persisted_state();
+    bool persist() const;
     std::optional<std::size_t> category_index_by_id(std::uint64_t category_id) const;
     std::optional<std::size_t> competition_index_by_id(std::uint64_t competition_id) const;
     bool category_name_exists(const std::string& category_name, std::optional<std::uint64_t> exclude_id = std::nullopt) const;

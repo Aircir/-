@@ -200,21 +200,29 @@ bool parse_request(const std::string& request_text, HttpRequest& request) {
     return true;
 }
 
-std::string build_http_response(const HttpResponse& response) {
+std::string build_http_response_head(const HttpResponse& response) {
     std::ostringstream output;
     output << "HTTP/1.1 " << response.status_code << ' ' << response.status_text << "\r\n";
     output << "Content-Type: " << response.content_type << "\r\n";
-    output << "Content-Length: " << response.body.size() << "\r\n";
+    if (!response.streaming) {
+        output << "Content-Length: " << response.body.size() << "\r\n";
+    }
     output << "Connection: close\r\n";
     output << "Access-Control-Allow-Origin: *\r\n";
     output << "Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS\r\n";
-    output << "Access-Control-Allow-Headers: Content-Type\r\n";
+    output << "Access-Control-Allow-Headers: Content-Type, Authorization\r\n";
 
     for (const auto& [key, value] : response.headers) {
         output << key << ": " << value << "\r\n";
     }
 
     output << "\r\n";
+    return output.str();
+}
+
+std::string build_http_response(const HttpResponse& response) {
+    std::ostringstream output;
+    output << build_http_response_head(response);
     output << response.body;
     return output.str();
 }
@@ -339,8 +347,18 @@ void HttpServer::serve(const RequestHandler& handler) {
             response = handler(request);
         }
 
-        const std::string http_payload = build_http_response(response);
-        send_all(client_socket, http_payload);
+        if (response.streaming && response.stream_handler) {
+            const std::string header_payload = build_http_response_head(response);
+            if (send_all(client_socket, header_payload)) {
+                const HttpStreamWriter writer = [&](const std::string& payload) {
+                    return send_all(client_socket, payload);
+                };
+                response.stream_handler(writer);
+            }
+        } else {
+            const std::string http_payload = build_http_response(response);
+            send_all(client_socket, http_payload);
+        }
         shutdown(client_socket, SD_BOTH);
         closesocket(client_socket);
     }

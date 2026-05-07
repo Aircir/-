@@ -23,6 +23,7 @@ logs/
 .env
 .env.*
 !.env.example
+!backend/.env.example
 
 # Node / frontend
 node_modules/
@@ -57,3 +58,6 @@ coverage/
 .cache/
 temp/
 tmp/
+data/runtime/
+backend/data/runtime/
+backend-test-runtime*/

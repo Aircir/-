@@ -1,14 +1,8 @@
--- MySQL 8.0+
--- College Competition AI System
--- Phase 1 demo seed data
--- Demo accounts use demo-only plain passwords for local development.
-
 USE college_competition_ai;
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
-TRUNCATE TABLE statistic_summary;
 TRUNCATE TABLE navigation_command;
 TRUNCATE TABLE consult_record;
 TRUNCATE TABLE search_log;
@@ -21,9 +15,9 @@ SET FOREIGN_KEY_CHECKS = 1;
 INSERT INTO user_info (
     user_id, username, password, real_name, major, grade, user_type, status, create_time, update_time
 ) VALUES
-    (1, 'student_demo', 'demo123456', 'Zhang Chen', 'Artificial Intelligence', '2022', 1, 1, '2026-05-01 09:00:00', '2026-05-01 09:00:00'),
-    (2, 'student_math', 'demo123456', 'Li Yue', 'Mathematics', '2023', 1, 1, '2026-05-01 09:05:00', '2026-05-01 09:05:00'),
-    (3, 'admin_demo', 'admin123456', 'System Admin', NULL, NULL, 2, 1, '2026-05-01 09:10:00', '2026-05-01 09:10:00');
+    (1, 'student', '123456', '学生演示账号', 'Artificial Intelligence', '2022', 1, 1, '2026-05-01 09:00:00', '2026-05-01 09:00:00'),
+    (2, 'admin', 'admin123', '管理员演示账号', NULL, NULL, 2, 1, '2026-05-01 09:05:00', '2026-05-01 09:05:00'),
+    (3, 'student_ai', '123456', 'AI 测试账号', 'Artificial Intelligence', '2023', 1, 1, '2026-05-01 09:10:00', '2026-05-01 09:10:00');
 
 INSERT INTO competition_category (
     category_id, category_name, category_desc, sort_no, create_time, update_time
@@ -140,23 +134,11 @@ INSERT INTO competition_info (
     );
 
 INSERT INTO search_log (
-    search_id, user_id, keyword, category_id, filter_text, filter_snapshot, result_count, search_time
+    search_id, user_id, keyword, major, competition_level, signup_status, trigger_source, result_count, create_time
 ) VALUES
-    (
-        1, 1, 'artificial intelligence', 3, 'major=Artificial Intelligence;level=International;status=Warmup',
-        JSON_OBJECT('keyword', 'artificial intelligence', 'major', 'Artificial Intelligence', 'competition_level', 'International', 'signup_status', 'Warmup'),
-        1, '2026-05-06 14:10:00'
-    ),
-    (
-        2, 1, 'mathematical modeling', 2, 'major=Artificial Intelligence;level=National A;status=Open',
-        JSON_OBJECT('keyword', 'mathematical modeling', 'major', 'Artificial Intelligence', 'competition_level', 'National A', 'signup_status', 'Open'),
-        1, '2026-05-06 14:15:00'
-    ),
-    (
-        3, 2, 'lanqiao', 1, 'major=Mathematics;level=National;status=Open',
-        JSON_OBJECT('keyword', 'lanqiao', 'major', 'Mathematics', 'competition_level', 'National', 'signup_status', 'Open'),
-        1, '2026-05-06 15:20:00'
-    );
+    (1, 1, 'artificial intelligence', 'Artificial Intelligence', 'International', 'Warmup', 'manual-search', 1, '2026-05-06 14:10:00'),
+    (2, 1, 'mathematical modeling', 'Artificial Intelligence', 'National A', 'Open', 'manual-search', 1, '2026-05-06 14:15:00'),
+    (3, 3, 'lanqiao', 'Artificial Intelligence', 'National', 'Open', 'quick-search', 1, '2026-05-06 15:20:00');
 
 INSERT INTO consult_record (
     record_id, user_id, competition_id, session_id, question_text, answer, consult_type, response_mode, prompt_context, consult_time
@@ -164,8 +146,8 @@ INSERT INTO consult_record (
     (
         1, 1, 3, 'session-mcm-001',
         'Is this contest suitable for an artificial intelligence student?',
-        'Yes. Although it is not a pure AI contest, it is very helpful for AI students because it improves modeling, data analysis and paper writing skills.',
-        'recommend',
+        'Yes. Although it is not a pure AI contest, it is still very helpful because it strengthens modeling, data analysis and paper writing ability.',
+        'general',
         'JSON',
         'competition=National College Student Mathematical Contest in Modeling;major=Artificial Intelligence;grade=2022',
         '2026-05-06 16:00:00'
@@ -173,55 +155,25 @@ INSERT INTO consult_record (
     (
         2, 1, 3, 'session-mcm-001',
         'What should I prepare first?',
-        'Focus on three parts: modeling basics, Python or MATLAB implementation, and teamwork-based paper writing.',
-        'prepare',
-        'SSE',
+        'You can start from three directions: modeling basics, Python or MATLAB practice, and team-based paper writing.',
+        'general',
+        'JSON',
         'previous_session=session-mcm-001',
         '2026-05-06 16:03:00'
     ),
     (
-        3, 2, 2, 'session-lanqiao-001',
+        3, 3, 2, 'session-lanqiao-001',
         'What is the difference between Lanqiao Cup and ICPC?',
-        'Lanqiao Cup is more friendly for individual participation and staged training, while ICPC emphasizes teamwork and high-pressure algorithm contests.',
-        'compare',
+        'Lanqiao Cup is more friendly for individual staged training, while ICPC emphasizes teamwork and algorithmic pressure.',
+        'general',
         'JSON',
         'competition_a=Lanqiao Cup;competition_b=ICPC',
         '2026-05-06 17:10:00'
     );
 
 INSERT INTO navigation_command (
-    command_id, user_id, user_input, intent_name, action_name, target_page, keyword, command_params, execute_result, execute_time
+    command_id, user_id, from_page, to_page, action_name, competition_id, competition_name, create_time
 ) VALUES
-    (
-        1, 1, 'open competition list page',
-        'open_competition_list',
-        'open_page',
-        'home',
-        NULL,
-        JSON_OBJECT('target', 'competition-results'),
-        'success',
-        '2026-05-06 14:08:00'
-    ),
-    (
-        2, 1, 'search artificial intelligence competition',
-        'search_competition',
-        'search',
-        'home',
-        'artificial intelligence',
-        JSON_OBJECT('keyword', 'artificial intelligence', 'category', 'Artificial Intelligence'),
-        'success',
-        '2026-05-06 14:09:00'
-    );
-
-INSERT INTO statistic_summary (
-    summary_id, summary_type, summary_key, summary_value, summary_label, user_id, record_id, search_id, command_id, category_id, competition_id, stats_date, update_time
-) VALUES
-    (1, 'consult_total', 'all', 128, 'Total Consults', NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-06', '2026-05-06 23:00:00'),
-    (2, 'search_total', 'all', 456, 'Total Searches', NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-06', '2026-05-06 23:00:00'),
-    (3, 'hot_question', 'modeling-preparation', 32, 'Mathematical Modeling Preparation', NULL, 2, NULL, NULL, NULL, 3, '2026-05-06', '2026-05-06 23:00:00'),
-    (4, 'hot_question', 'lanqiao-vs-icpc', 25, 'Lanqiao Cup vs ICPC', NULL, 3, NULL, NULL, NULL, 2, '2026-05-06', '2026-05-06 23:00:00'),
-    (5, 'hot_category', 'artificial-intelligence', 96, 'Artificial Intelligence', NULL, NULL, 1, 2, 3, 4, '2026-05-06', '2026-05-06 23:00:00'),
-    (6, 'hot_category', 'programming', 88, 'Programming', NULL, NULL, 3, NULL, 1, 2, '2026-05-06', '2026-05-06 23:00:00'),
-    (7, 'hot_navigation', 'open_competition_list', 64, 'Open Competition List Page', NULL, NULL, NULL, 1, NULL, NULL, '2026-05-06', '2026-05-06 23:00:00'),
-    (8, 'hot_navigation', 'search_ai_competition', 51, 'Search Artificial Intelligence Competition', NULL, NULL, NULL, 2, 3, 4, '2026-05-06', '2026-05-06 23:00:00'),
-    (9, 'active_period', '14:00-18:00', 72, '14:00-18:00', NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-06', '2026-05-06 23:00:00');
+    (1, 1, 'home', 'home', 'open_competition_list', 0, '', '2026-05-06 14:08:00'),
+    (2, 1, 'home', 'home', 'search_ai_competition', 4, 'Global AI Innovation Challenge', '2026-05-06 14:09:00'),
+    (3, 3, 'home', 'competition-detail', 'open_competition_detail', 2, 'Lanqiao Cup Software and Information Technology Competition', '2026-05-06 15:25:00');

@@ -1,64 +1,56 @@
 # 后端说明
 
-当前目录是本项目第一阶段的可运行后端骨架，用于支撑毕业设计演示版本。
+当前目录是竞赛智能咨询系统的 C++ 后端，已经支持：
 
-## 当前范围
-
-当前已经完成：
-
-- 基于 Windows 的 C++17 自定义 HTTP 服务
-- 基于内存的竞赛演示数据仓库
-- `GET /api/health`
-- `GET /api/competitions`
-- `GET /api/competitions/{id}`
-- 已开启 CORS，方便本地前端原型直接访问
-
-当前还未接入：
-
-- MySQL 数据库连接
-- 登录接口
-- 后台 CRUD
+- 竞赛分类与竞赛信息查询
+- 管理员分类/竞赛增删改查
+- 登录鉴权
 - AI 咨询接口
-- SSE 流式输出
-- 记录与统计回写
+- 搜索记录、导航记录、咨询记录统计
+- MySQL 持久化
+- MySQL 不可用时自动回退到本地文件存储
 
-## 接口说明
+## 启动前准备
 
-### `GET /api/health`
+需要本机具备以下环境：
 
-健康检查接口，用于确认后端服务是否正常启动。
+- `g++`（支持 C++17）
+- MySQL 8.0
+- MySQL 开发库目录
+  默认读取 `D:\MySQL\MySQL\MySQL Server 8.0`
+  如果你的安装目录不同，可以在 `.env.local` 中配置 `MYSQL_ROOT`
 
-### `GET /api/competitions`
+## 配置方式
 
-竞赛列表接口，支持以下查询参数：
+建议先复制一份示例配置：
 
-- `keyword`
-- `major`
-- `level` 或 `competition_level`
-- `status` 或 `signup_status`
-- `grade` 或 `suitable_grade`
-- `category` 或 `category_name`
-- `category_id` 或 `categoryId`
-
-示例：
-
-```text
-http://127.0.0.1:8080/api/competitions?keyword=artificial%20intelligence&status=Warmup
+```powershell
+cd backend
+Copy-Item .env.example .env.local
 ```
 
-### `GET /api/competitions/{id}`
-
-竞赛详情接口。
-
-示例：
+然后按需填写 `.env.local`：
 
 ```text
-http://127.0.0.1:8080/api/competitions/4
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=你的数据库密码
+MYSQL_DATABASE=college_competition_ai
+
+OPENAI_API_KEY=你的密钥
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL=gpt-5.4
+OPENAI_API_FORMAT=auto
 ```
 
-## 启动方式
+说明：
 
-### 方式一：使用 PowerShell 启动
+- `OPENAI_API_FORMAT=auto` 表示优先走 `responses`，失败时自动回退到 `chat/completions`
+- 如果你使用的是兼容平台，连续对话报格式错误时，可以直接改成 `OPENAI_API_FORMAT=chat`
+- 不配置 `OPENAI_API_KEY` 时，竞赛查询和后台 CRUD 仍可用，但 AI 咨询不可用
+
+## 启动命令
 
 在项目根目录执行：
 
@@ -67,65 +59,75 @@ cd backend
 powershell -ExecutionPolicy Bypass -File .\run-dev.ps1
 ```
 
-说明：
-
-- 该命令会先自动编译后端，再启动服务。
-- 默认端口是 `8080`。
-- 启动成功后，可通过 `http://127.0.0.1:8080/api/health` 检查服务状态。
-
-### 方式二：指定端口启动
-
-如果你想换端口，比如 `8090`，执行：
+指定端口：
 
 ```powershell
 cd backend
 powershell -ExecutionPolicy Bypass -File .\run-dev.ps1 -Port 8090
 ```
 
-### 方式三：使用 bat 启动
-
-如果本机 PowerShell 执行策略限制较多，推荐直接用批处理：
+如果你更习惯批处理，也可以：
 
 ```powershell
 cd backend
 .\run-dev.bat
 ```
 
-同样也可以带端口参数：
+## 启动后的判断方式
 
-```powershell
-cd backend
-.\run-dev.bat -Port 8090
-```
-
-说明：
-
-- 前端页面默认请求 `http://127.0.0.1:8080`。
-- 如果后端不是跑在 `8080`，打开页面时可以在地址后面加上 `apiBase` 参数。
-- 例如：
-
-```text
-file:///D:/本科毕业设计/system/pages/home.html?apiBase=http://127.0.0.1:8090
-```
-
-## 启动后怎么验证
-
-启动成功后，你可以在浏览器里直接打开下面这些地址：
+启动成功后访问：
 
 ```text
 http://127.0.0.1:8080/api/health
-http://127.0.0.1:8080/api/competitions
-http://127.0.0.1:8080/api/competitions/4
 ```
 
-也可以测试带筛选条件的列表接口：
+重点看返回值里的 `source`：
 
-```text
-http://127.0.0.1:8080/api/competitions?keyword=artificial%20intelligence&status=Warmup
-```
+- `mysql`：说明已经连接 MySQL，数据会持久化到数据库
+- `local_storage`：说明 MySQL 当前不可用，后端自动回退到了本地文件存储
 
-## 备注
+后端启动时控制台也会输出当前是否成功连接 MySQL。
 
-- 当前后端数据与 `database/seed.sql` 中的演示数据保持一致。
-- 这一阶段故意先不接 MySQL 驱动，目的是优先把“后端服务能跑起来”这件事稳定下来。
-- 下一步最适合做的是把 `pages/home.html` 和 `pages/competition-detail.html` 接到这两个真实接口上。
+## 可直接测试的账号
+
+- 学生：`student / 123456`
+- 管理员：`admin / admin123`
+
+如果你在 `.env.local` 里改了 `STUDENT_USERNAME`、`STUDENT_PASSWORD`、`ADMIN_USERNAME`、`ADMIN_PASSWORD`，系统会按你的配置生成演示账号。
+
+## 数据库说明
+
+后端启动时会自动创建缺失的数据表，并兼容补齐旧版表结构中缺少的字段。
+
+当前实际使用的核心表有：
+
+- `user_info`
+- `competition_category`
+- `competition_info`
+- `search_log`
+- `consult_record`
+- `navigation_command`
+
+数据库初始化脚本见：
+
+- `../database/schema.sql`
+- `../database/seed.sql`
+
+如果你不想手动导入，也可以直接启动后端，让程序自动建表并写入基础演示数据。
+
+## 常用接口
+
+- `GET /api/health`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+- `GET /api/categories`
+- `POST /api/categories`
+- `GET /api/competitions`
+- `POST /api/competitions`
+- `POST /api/consultations`
+- `GET /api/records/dashboard`
+
+## 当前限制
+
+- SSE 流式输出还没有单独实现，当前咨询接口返回标准 JSON
+- Session 令牌目前仍保存在后端内存中，重启后需要重新登录

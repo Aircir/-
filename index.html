@@ -3,9 +3,9 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>大学生竞赛智能咨询系统 - 演示入口</title>
+    <title>大学生竞赛智能咨询系统 - 登录入口</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet"/>
     <style>
         body {
             font-family: "Manrope", sans-serif;
@@ -26,36 +26,85 @@
                 大学生竞赛智能咨询系统
             </h1>
             <p class="mt-4 text-lg leading-8 text-slate-600">
-                当前版本先完成演示壳层联动，你可以从这里进入学生端和管理员端，顺着检索、详情、咨询、记录与统计这条主链路进行演示。
+                当前版本已经打通前台检索、竞赛详情、AI 咨询、记录统计和后台竞赛管理主链路，
+                现在也补上了简化登录与权限控制，适合直接作为答辩演示入口。
             </p>
         </div>
+
+        <section class="mt-10 rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-lg shadow-slate-200/60 backdrop-blur">
+            <div class="grid gap-6 lg:grid-cols-[1.1fr_1fr_1fr]">
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">登录与权限</p>
+                        <h2 class="mt-2 text-2xl font-bold text-slate-900">先登录，再进入对应页面</h2>
+                        <p class="mt-3 text-sm leading-7 text-slate-600">
+                            学生账号用于前台体验，管理员账号才能进入后台管理页并执行竞赛分类、竞赛信息的增删改查。
+                        </p>
+                    </div>
+                    <label class="block">
+                        <span class="mb-2 block text-sm font-semibold text-slate-700">后端地址</span>
+                        <input id="api-base-input" class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-blue-700 focus:bg-white" type="text" value="http://127.0.0.1:8080"/>
+                    </label>
+                    <div id="auth-feedback" class="hidden rounded-2xl border px-4 py-3 text-sm"></div>
+                    <div id="auth-current" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                        当前未登录，可直接使用右侧演示账号登录。
+                    </div>
+                </div>
+
+                <section class="rounded-3xl border border-blue-200 bg-blue-50/70 p-5">
+                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-800">学生账号</p>
+                    <h3 class="mt-2 text-xl font-bold text-slate-900">进入前台体验链路</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-600">适合演示竞赛检索、详情、AI 咨询和记录统计。</p>
+                    <div class="mt-4 space-y-3">
+                        <input id="student-username" class="w-full rounded-2xl border border-blue-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-blue-700" type="text" value="student" placeholder="学生用户名"/>
+                        <input id="student-password" class="w-full rounded-2xl border border-blue-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-blue-700" type="password" value="123456" placeholder="学生密码"/>
+                        <button id="student-login-btn" class="inline-flex w-full items-center justify-center rounded-2xl bg-blue-800 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+                            以学生身份登录并进入首页
+                        </button>
+                    </div>
+                </section>
+
+                <section class="rounded-3xl border border-orange-200 bg-orange-50/80 p-5">
+                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-orange-700">管理员账号</p>
+                    <h3 class="mt-2 text-xl font-bold text-slate-900">进入后台管理</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-600">适合演示分类管理、竞赛信息增删改查和权限隔离。</p>
+                    <div class="mt-4 space-y-3">
+                        <input id="admin-username" class="w-full rounded-2xl border border-orange-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-orange-500" type="text" value="admin" placeholder="管理员用户名"/>
+                        <input id="admin-password" class="w-full rounded-2xl border border-orange-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-orange-500" type="password" value="admin123" placeholder="管理员密码"/>
+                        <button id="admin-login-btn" class="inline-flex w-full items-center justify-center rounded-2xl bg-orange-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-orange-400">
+                            以管理员身份登录并进入后台
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </section>
 
         <div class="mt-12 grid gap-6 lg:grid-cols-2">
             <section class="rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-xl shadow-slate-200/70 backdrop-blur">
                 <p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-800">学生端</p>
-                <h2 class="mt-3 text-3xl font-bold text-slate-900">从竞赛检索进入完整使用链路</h2>
+                <h2 class="mt-3 text-3xl font-bold text-slate-900">从竞赛检索进入完整体验链路</h2>
                 <p class="mt-4 text-base leading-7 text-slate-600">
-                    适合答辩时演示“查竞赛、看详情、做智能咨询、看记录统计”的完整闭环。
+                    适合答辩时演示“查竞赛、看详情、做 AI 咨询、看记录统计”的完整闭环。
                 </p>
                 <div class="mt-6 flex flex-wrap gap-3">
                     <a class="inline-flex items-center rounded-xl bg-blue-800 px-5 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700" href="pages/home.html">
                         进入首页 / 检索页
                     </a>
                     <a class="inline-flex items-center rounded-xl border border-slate-300 px-5 py-3 text-base font-semibold text-slate-700 transition hover:border-blue-800 hover:text-blue-800" href="pages/ai-consult.html">
-                        直接打开智能咨询
+                        直接打开 AI 咨询
                     </a>
                 </div>
                 <ul class="mt-8 space-y-3 text-sm text-slate-600">
                     <li>1. 首页筛选或自然语言输入</li>
                     <li>2. 进入竞赛详情页</li>
-                    <li>3. 跳转智能咨询页</li>
+                    <li>3. 跳转到 AI 咨询页</li>
                     <li>4. 查看记录与统计页</li>
                 </ul>
             </section>
 
             <section class="rounded-3xl border border-slate-200 bg-slate-950 p-8 text-white shadow-xl shadow-slate-300/40">
                 <p class="text-sm font-semibold uppercase tracking-[0.2em] text-orange-300">管理员端</p>
-                <h2 class="mt-3 text-3xl font-bold">从后台维护数据进入前台联动</h2>
+                <h2 class="mt-3 text-3xl font-bold">从后台维护数据进入前后台联动</h2>
                 <p class="mt-4 text-base leading-7 text-slate-300">
                     适合展示后台录入竞赛数据、切回前台查看展示效果和后续咨询场景。
                 </p>
@@ -69,22 +118,213 @@
                 </div>
                 <ul class="mt-8 space-y-3 text-sm text-slate-300">
                     <li>1. 后台查看竞赛管理工作台</li>
-                    <li>2. 切到前台首页查看竞赛入口</li>
-                    <li>3. 打通咨询与统计的演示收口</li>
+                    <li>2. 维护竞赛分类与竞赛信息</li>
+                    <li>3. 切回前台验证展示和检索效果</li>
                 </ul>
             </section>
         </div>
 
         <div class="mt-10 rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm backdrop-blur">
-            <h3 class="text-lg font-bold text-slate-900">当前已打通的演示壳层</h3>
+            <h3 class="text-lg font-bold text-slate-900">当前已打通的演示模块</h3>
             <div class="mt-4 flex flex-wrap gap-3 text-sm text-slate-600">
                 <span class="rounded-full bg-slate-100 px-4 py-2">首页 / 竞赛检索</span>
                 <span class="rounded-full bg-slate-100 px-4 py-2">竞赛详情</span>
-                <span class="rounded-full bg-slate-100 px-4 py-2">智能咨询</span>
+                <span class="rounded-full bg-slate-100 px-4 py-2">AI 咨询</span>
                 <span class="rounded-full bg-slate-100 px-4 py-2">记录与统计</span>
                 <span class="rounded-full bg-slate-100 px-4 py-2">后台竞赛管理</span>
+                <span class="rounded-full bg-slate-100 px-4 py-2">简化登录与权限</span>
             </div>
         </div>
     </main>
+
+    <script>
+        (() => {
+            const STORAGE_KEYS = {
+                apiBase: "competitionApiBase",
+                authToken: "competitionAuthToken",
+                authRole: "competitionAuthRole",
+                authDisplayName: "competitionAuthDisplayName",
+                authUsername: "competitionAuthUsername"
+            };
+
+            const currentUrl = new URL(window.location.href);
+            const apiBaseInput = document.getElementById("api-base-input");
+            const feedback = document.getElementById("auth-feedback");
+            const currentBox = document.getElementById("auth-current");
+            const studentButton = document.getElementById("student-login-btn");
+            const adminButton = document.getElementById("admin-login-btn");
+            const studentUsername = document.getElementById("student-username");
+            const studentPassword = document.getElementById("student-password");
+            const adminUsername = document.getElementById("admin-username");
+            const adminPassword = document.getElementById("admin-password");
+
+            function normalizeBaseUrl(value) {
+                return String(value || "").trim().replace(/\/+$/, "");
+            }
+
+            function storedApiBase() {
+                const queryBase = currentUrl.searchParams.get("apiBase");
+                if (queryBase) {
+                    const normalized = normalizeBaseUrl(queryBase);
+                    window.localStorage.setItem(STORAGE_KEYS.apiBase, normalized);
+                    return normalized;
+                }
+
+                const saved = window.localStorage.getItem(STORAGE_KEYS.apiBase);
+                return saved ? normalizeBaseUrl(saved) : "http://127.0.0.1:8080";
+            }
+
+            function clearAuthSession() {
+                window.localStorage.removeItem(STORAGE_KEYS.authToken);
+                window.localStorage.removeItem(STORAGE_KEYS.authRole);
+                window.localStorage.removeItem(STORAGE_KEYS.authDisplayName);
+                window.localStorage.removeItem(STORAGE_KEYS.authUsername);
+            }
+
+            function setFeedback(message, isError = false) {
+                if (!message) {
+                    feedback.className = "hidden rounded-2xl border px-4 py-3 text-sm";
+                    feedback.textContent = "";
+                    return;
+                }
+
+                feedback.className = `rounded-2xl border px-4 py-3 text-sm ${isError ? "border-red-200 bg-red-50 text-red-700" : "border-blue-200 bg-blue-50 text-blue-700"}`;
+                feedback.textContent = message;
+            }
+
+            function updateCurrentAuthSummary() {
+                const token = window.localStorage.getItem(STORAGE_KEYS.authToken) || "";
+                const role = window.localStorage.getItem(STORAGE_KEYS.authRole) || "";
+                const displayName = window.localStorage.getItem(STORAGE_KEYS.authDisplayName) || "";
+                const username = window.localStorage.getItem(STORAGE_KEYS.authUsername) || "";
+
+                if (!token || !role) {
+                    currentBox.textContent = "当前未登录，可直接使用右侧演示账号登录。";
+                    return;
+                }
+
+                currentBox.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <p class="font-semibold text-slate-800">当前已登录：${displayName || username}</p>
+                            <p class="mt-1 text-xs text-slate-500">角色：${role === "admin" ? "管理员" : "学生"}</p>
+                        </div>
+                        <button id="logout-btn" type="button" class="inline-flex items-center rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-500 hover:text-slate-900">
+                            退出登录
+                        </button>
+                    </div>
+                `;
+
+                const logoutButton = document.getElementById("logout-btn");
+                if (logoutButton) {
+                    logoutButton.addEventListener("click", async () => {
+                        try {
+                            await fetch(`${normalizeBaseUrl(apiBaseInput.value) || storedApiBase()}/api/auth/logout`, {
+                                method: "POST",
+                                headers: {
+                                    Accept: "application/json",
+                                    Authorization: `Bearer ${token}`
+                                }
+                            });
+                        } catch (error) {
+                            // Ignore logout request failures and clear local state anyway.
+                        }
+
+                        clearAuthSession();
+                        setFeedback("已退出登录。");
+                        updateCurrentAuthSummary();
+                    });
+                }
+            }
+
+            async function loginAndRedirect(options) {
+                const apiBase = normalizeBaseUrl(apiBaseInput.value) || storedApiBase();
+                if (!apiBase) {
+                    setFeedback("请先填写后端地址。", true);
+                    return;
+                }
+
+                window.localStorage.setItem(STORAGE_KEYS.apiBase, apiBase);
+                setFeedback("正在登录，请稍候...");
+
+                try {
+                    const body = new URLSearchParams();
+                    body.set("username", options.username);
+                    body.set("password", options.password);
+
+                    const response = await fetch(`${apiBase}/api/auth/login`, {
+                        method: "POST",
+                        headers: {
+                            Accept: "application/json",
+                            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+                        },
+                        body: body.toString()
+                    });
+
+                    let payload = null;
+                    try {
+                        payload = await response.json();
+                    } catch (error) {
+                        throw new Error("登录接口没有返回有效 JSON。");
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(payload && payload.message ? payload.message : `登录失败：${response.status}`);
+                    }
+
+                    const data = payload && payload.data ? payload.data : null;
+                    if (!data || !data.token || !data.user) {
+                        throw new Error("登录成功，但返回数据不完整。");
+                    }
+
+                    window.localStorage.setItem(STORAGE_KEYS.authToken, data.token);
+                    window.localStorage.setItem(STORAGE_KEYS.authRole, data.user.role || "");
+                    window.localStorage.setItem(STORAGE_KEYS.authDisplayName, data.user.display_name || "");
+                    window.localStorage.setItem(STORAGE_KEYS.authUsername, data.user.username || "");
+
+                    updateCurrentAuthSummary();
+                    setFeedback("登录成功，正在跳转...");
+
+                    const redirect = currentUrl.searchParams.get("redirect");
+                    const fallback = options.role === "admin"
+                        ? "pages/admin-competition-management.html"
+                        : "pages/home.html";
+                    window.setTimeout(() => {
+                        window.location.href = redirect || fallback;
+                    }, 250);
+                } catch (error) {
+                    setFeedback(`登录失败：${error.message}`, true);
+                }
+            }
+
+            apiBaseInput.value = storedApiBase();
+            updateCurrentAuthSummary();
+
+            if (studentButton) {
+                studentButton.addEventListener("click", () => {
+                    loginAndRedirect({
+                        role: "student",
+                        username: studentUsername.value.trim(),
+                        password: studentPassword.value
+                    });
+                });
+            }
+
+            if (adminButton) {
+                adminButton.addEventListener("click", () => {
+                    loginAndRedirect({
+                        role: "admin",
+                        username: adminUsername.value.trim(),
+                        password: adminPassword.value
+                    });
+                });
+            }
+
+            const preferredLogin = currentUrl.searchParams.get("login");
+            if (preferredLogin === "admin" && adminUsername) {
+                adminUsername.focus();
+            }
+        })();
+    </script>
 </body>
 </html>

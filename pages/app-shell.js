@@ -14,7 +14,11 @@
     const DEFAULT_API_BASE = "http://127.0.0.1:8080";
     const STORAGE_KEYS = {
         apiBase: "competitionApiBase",
-        lastCompetitionId: "lastCompetitionId"
+        lastCompetitionId: "lastCompetitionId",
+        authToken: "competitionAuthToken",
+        authRole: "competitionAuthRole",
+        authDisplayName: "competitionAuthDisplayName",
+        authUsername: "competitionAuthUsername"
     };
     const pageName = window.location.pathname.split("/").pop();
 
@@ -41,6 +45,40 @@
 
     const apiBase = getApiBase();
 
+    function getAuthToken() {
+        return window.localStorage.getItem(STORAGE_KEYS.authToken) || "";
+    }
+
+    function getAuthRole() {
+        return window.localStorage.getItem(STORAGE_KEYS.authRole) || "";
+    }
+
+    function clearAuthSession() {
+        window.localStorage.removeItem(STORAGE_KEYS.authToken);
+        window.localStorage.removeItem(STORAGE_KEYS.authRole);
+        window.localStorage.removeItem(STORAGE_KEYS.authDisplayName);
+        window.localStorage.removeItem(STORAGE_KEYS.authUsername);
+    }
+
+    function applyAuthHeaders(headers = {}) {
+        const nextHeaders = { ...headers };
+        const token = getAuthToken();
+        if (token) {
+            nextHeaders.Authorization = `Bearer ${token}`;
+        }
+        return nextHeaders;
+    }
+
+    function buildLaunchUrl(params = {}) {
+        const url = new URL(routes.launch, window.location.href);
+        Object.entries(params).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== "") {
+                url.searchParams.set(key, value);
+            }
+        });
+        return url.toString();
+    }
+
     function buildApiUrl(path, params = {}) {
         const url = new URL(`${apiBase}${path}`);
         Object.entries(params).forEach(([key, value]) => {
@@ -54,9 +92,9 @@
     async function fetchApiJson(path, params = {}) {
         const response = await fetch(buildApiUrl(path, params), {
             method: "GET",
-            headers: {
+            headers: applyAuthHeaders({
                 Accept: "application/json"
-            }
+            })
         });
 
         let payload = null;
@@ -76,6 +114,67 @@
         }
 
         return payload;
+    }
+
+    async function postApiForm(path, formData = {}, options = {}) {
+        const { keepalive = false } = options;
+        const body = new URLSearchParams();
+        Object.entries(formData).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== "") {
+                body.set(key, String(value));
+            }
+        });
+
+        const response = await fetch(buildApiUrl(path), {
+            method: "POST",
+            headers: applyAuthHeaders({
+                Accept: "application/json",
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+            }),
+            body: body.toString(),
+            keepalive
+        });
+
+        let payload = null;
+        try {
+            payload = await response.json();
+        } catch (error) {
+            throw new Error("接口返回的不是有效 JSON。");
+        }
+
+        if (!response.ok) {
+            throw new Error(payload && payload.message ? payload.message : `请求失败：${response.status}`);
+        }
+
+        if (payload && typeof payload.code === "number" && payload.code !== 0) {
+            throw new Error(payload.message || "接口返回异常。");
+        }
+
+        return payload;
+    }
+
+    function currentPageToken() {
+        return (pageName || "").replace(/\.html$/i, "") || "unknown";
+    }
+
+    function trackSearchRecord(filters = {}, resultCount = 0, triggerSource = "") {
+        void postApiForm("/api/records/searches", {
+            keyword: filters.keyword || "",
+            major: filters.major || "",
+            competition_level: filters.competition_level || "",
+            signup_status: filters.signup_status || "",
+            result_count: resultCount,
+            trigger_source: triggerSource || ""
+        }, { keepalive: true }).catch(() => {});
+    }
+
+    function trackNavigationRecord(toPage, actionName, competitionId = 0) {
+        void postApiForm("/api/records/navigation", {
+            from_page: currentPageToken(),
+            to_page: toPage,
+            action_name: actionName,
+            competition_id: competitionId || ""
+        }, { keepalive: true }).catch(() => {});
     }
 
     function scrollToHashTarget() {
@@ -305,7 +404,9 @@
 
     function wireHomePage() {
         const state = {
-            rawItems: []
+            rawItems: [],
+            commandCategoryName: "",
+            navigationBusy: false
         };
         const majorValuesByIndex = ["", "Artificial Intelligence", "Mathematics", "Design", "All majors"];
         const statusValuesByIndex = ["", "Open", "Warmup"];
@@ -318,6 +419,17 @@
             adminEntry.dataset.shell = "admin-entry";
             adminEntry.className = "rounded-lg border border-outline-variant px-sm py-xs text-body-md text-on-surface-variant hover:border-primary hover:text-primary transition-colors";
             adminEntry.textContent = "管理入口";
+            adminEntry.addEventListener("click", (event) => {
+                if (getAuthRole() === "admin" && getAuthToken()) {
+                    return;
+                }
+
+                event.preventDefault();
+                window.location.href = buildLaunchUrl({
+                    redirect: "pages/admin-competition-management.html",
+                    login: "admin"
+                });
+            });
             headerActions.prepend(adminEntry);
         }
 
@@ -436,6 +548,41 @@
             return activeIndex >= 0 ? activeIndex : 0;
         }
 
+        function setMajorByValue(value) {
+            if (!majorSelect) {
+                return;
+            }
+
+            const nextIndex = majorValuesByIndex.findIndex((item) => item === value);
+            majorSelect.selectedIndex = nextIndex >= 0 ? nextIndex : 0;
+        }
+
+        function setStatusByValue(value) {
+            const nextIndex = statusValuesByIndex.findIndex((item) => item === value);
+            setStatusButtonStyles(nextIndex >= 0 ? nextIndex : 0);
+        }
+
+        function setLevelByValue(value) {
+            const nextIndex = levelValuesByIndex.findIndex((item) => item === value);
+            levelCheckboxes.forEach((checkbox, index) => {
+                checkbox.checked = nextIndex >= 0 && index === nextIndex;
+            });
+        }
+
+        function resetHomeFilters() {
+            if (filterKeywordInput) {
+                filterKeywordInput.value = "";
+            }
+            setMajorByValue("");
+            setStatusByValue("");
+            setLevelByValue("");
+            state.commandCategoryName = "";
+        }
+
+        function clearCommandCategoryFilter() {
+            state.commandCategoryName = "";
+        }
+
         function clearCardHighlights() {
             competitionGrid.querySelectorAll("[data-shell-highlight='true']").forEach((card) => {
                 card.removeAttribute("data-shell-highlight");
@@ -473,7 +620,8 @@
                 keyword: filterKeywordInput ? filterKeywordInput.value.trim() : "",
                 major: majorSelect ? majorValuesByIndex[majorSelect.selectedIndex] || "" : "",
                 signup_status: statusValuesByIndex[getActiveStatusIndex()] || "",
-                competition_level: activeLevelIndex >= 0 ? levelValuesByIndex[activeLevelIndex] || "" : ""
+                competition_level: activeLevelIndex >= 0 ? levelValuesByIndex[activeLevelIndex] || "" : "",
+                category_name: state.commandCategoryName || ""
             };
         }
 
@@ -562,13 +710,14 @@
                         return;
                     }
                     rememberCompetitionId(competitionId);
+                    trackNavigationRecord("competition-detail", "open_competition_detail", competitionId);
                     window.location.href = competitionDetailUrl(competitionId);
                 });
             });
         }
 
         async function loadCompetitions(options = {}) {
-            const { feedbackMessage = "", preserveNotice = false } = options;
+            const { feedbackMessage = "", preserveNotice = false, trackSource = "" } = options;
             const filters = readHomeFilters();
 
             if (!preserveNotice) {
@@ -580,6 +729,9 @@
                 const items = payload && payload.data && Array.isArray(payload.data.items) ? payload.data.items : [];
                 state.rawItems = items;
                 renderCompetitionList(items);
+                if (trackSource) {
+                    trackSearchRecord(filters, items.length, trackSource);
+                }
                 clearResultsNotice();
                 if (feedbackMessage) {
                     showHomeFeedback(feedbackMessage);
@@ -595,55 +747,141 @@
 
         const debouncedReload = debounce(() => {
             window.location.hash = "competition-results";
-            void loadCompetitions();
+            void loadCompetitions({ trackSource: "keyword_input" });
         }, 300);
 
+        async function requestNavigationIntent(command) {
+            const payload = await postApiForm("/api/navigation/interpret", {
+                command
+            });
+            return payload && payload.data ? payload.data : null;
+        }
+
+        async function applyNavigationIntent(intent, originalCommand) {
+            const action = intent && intent.action ? String(intent.action) : "unknown";
+            const feedbackMessage = intent && intent.feedback_message
+                ? String(intent.feedback_message)
+                : "已解析你的指令。";
+
+            if (action === "open_competition_list") {
+                resetHomeFilters();
+                window.location.hash = "competition-results";
+                await loadCompetitions({ feedbackMessage, trackSource: "command_nl_open_list" });
+                return;
+            }
+
+            if (action === "search_competition") {
+                const keyword = String(intent.keyword || intent.competition_name || "").trim();
+                if (filterKeywordInput) {
+                    filterKeywordInput.value = keyword;
+                }
+                setMajorByValue(String(intent.major || "").trim());
+                setStatusByValue(String(intent.signup_status || "").trim());
+                setLevelByValue(String(intent.competition_level || "").trim());
+                state.commandCategoryName = String(intent.category_name || "").trim();
+                window.location.hash = "competition-results";
+                await loadCompetitions({ feedbackMessage, trackSource: "command_nl_search" });
+                return;
+            }
+
+            if (action === "open_competition_detail" && Number(intent.competition_id) > 0) {
+                const competitionId = Number(intent.competition_id);
+                rememberCompetitionId(competitionId);
+                trackNavigationRecord("competition-detail", "open_competition_detail", competitionId);
+                window.location.href = competitionDetailUrl(competitionId);
+                return;
+            }
+
+            if (action === "open_ai_consult" && Number(intent.competition_id) > 0) {
+                const competitionId = Number(intent.competition_id);
+                rememberCompetitionId(competitionId);
+                trackNavigationRecord("ai-consult", "open_ai_consult", competitionId);
+                window.location.href = aiConsultUrl(competitionId);
+                return;
+            }
+
+            if (action === "open_records") {
+                trackNavigationRecord("records-statistics", "open_records");
+                window.location.href = routes.records;
+                return;
+            }
+
+            if (action === "view_consult_records") {
+                trackNavigationRecord("records-statistics", "view_consult_records");
+                window.location.href = routes.recordsConsult;
+                return;
+            }
+
+            if (action === "view_hot_stats") {
+                trackNavigationRecord("records-statistics", "view_hot_stats");
+                window.location.href = routes.recordsHot;
+                return;
+            }
+
+            if (action === "open_admin") {
+                trackNavigationRecord("admin-competition-management", "open_admin");
+                if (getAuthRole() === "admin" && getAuthToken()) {
+                    window.location.href = routes.admin;
+                } else {
+                    window.location.href = buildLaunchUrl({
+                        redirect: "pages/admin-competition-management.html",
+                        login: "admin"
+                    });
+                }
+                return;
+            }
+
+            if (filterKeywordInput) {
+                filterKeywordInput.value = originalCommand;
+            }
+            clearCommandCategoryFilter();
+            setMajorByValue("");
+            setStatusByValue("");
+            setLevelByValue("");
+            window.location.hash = "competition-results";
+            await loadCompetitions({
+                feedbackMessage: feedbackMessage || `已按关键词“${originalCommand}”执行搜索。`,
+                trackSource: "command_nl_fallback"
+            });
+        }
+
         if (commandButton) {
-            commandButton.addEventListener("click", () => {
+            commandButton.addEventListener("click", async () => {
                 const command = commandInput ? commandInput.value.trim() : "";
+                if (state.navigationBusy) {
+                    return;
+                }
                 if (!command) {
                     clearHomeFeedback();
-                    showHomeFeedback("可以尝试输入：打开竞赛列表页，或搜索人工智能类竞赛。");
+                    showHomeFeedback("可以尝试输入：打开竞赛列表页、搜索人工智能类竞赛、打开蓝桥杯详情。");
                     return;
                 }
 
-                if (command.includes("打开") && command.includes("竞赛列表")) {
+                state.navigationBusy = true;
+                commandButton.disabled = true;
+                showHomeFeedback("正在理解你的指令...");
+
+                try {
+                    const intent = await requestNavigationIntent(command);
+                    await applyNavigationIntent(intent, command);
+                } catch (error) {
                     if (filterKeywordInput) {
-                        filterKeywordInput.value = "";
+                        filterKeywordInput.value = command;
                     }
-                    if (majorSelect) {
-                        majorSelect.selectedIndex = 0;
-                    }
-                    levelCheckboxes.forEach((checkbox) => {
-                        checkbox.checked = false;
-                    });
-                    setStatusButtonStyles(0);
+                    clearCommandCategoryFilter();
+                    setMajorByValue("");
+                    setStatusByValue("");
+                    setLevelByValue("");
                     window.location.hash = "competition-results";
-                    void loadCompetitions({ feedbackMessage: "已打开竞赛列表。" });
-                    return;
-                }
-
-                if ((command.includes("搜索") || command.includes("查找")) && command.includes("人工智能")) {
-                    if (filterKeywordInput) {
-                        filterKeywordInput.value = "artificial intelligence";
-                    }
-                    if (majorSelect) {
-                        majorSelect.selectedIndex = 0;
-                    }
-                    levelCheckboxes.forEach((checkbox) => {
-                        checkbox.checked = false;
+                    await loadCompetitions({
+                        feedbackMessage: `导航理解失败，已按关键词“${command}”执行搜索。`,
+                        trackSource: "command_nl_error"
                     });
-                    setStatusButtonStyles(0);
-                    window.location.hash = "ai-competition-card";
-                    void loadCompetitions({ feedbackMessage: "已为你搜索人工智能类竞赛。" });
-                    return;
+                    showHomeFeedback(`导航理解失败：${error.message}`, true);
+                } finally {
+                    state.navigationBusy = false;
+                    commandButton.disabled = false;
                 }
-
-                if (filterKeywordInput) {
-                    filterKeywordInput.value = command;
-                }
-                window.location.hash = "competition-results";
-                void loadCompetitions({ feedbackMessage: `已按关键词“${command}”执行搜索。` });
             });
         }
 
@@ -661,6 +899,7 @@
         if (filterKeywordInput) {
             filterKeywordInput.addEventListener("input", () => {
                 clearHomeFeedback();
+                clearCommandCategoryFilter();
                 debouncedReload();
             });
         }
@@ -668,8 +907,9 @@
         if (majorSelect) {
             majorSelect.addEventListener("change", () => {
                 clearHomeFeedback();
+                clearCommandCategoryFilter();
                 window.location.hash = "competition-results";
-                void loadCompetitions();
+                void loadCompetitions({ trackSource: "major_filter" });
             });
         }
 
@@ -677,8 +917,9 @@
             button.addEventListener("click", () => {
                 setStatusButtonStyles(index);
                 clearHomeFeedback();
+                clearCommandCategoryFilter();
                 window.location.hash = "competition-results";
-                void loadCompetitions();
+                void loadCompetitions({ trackSource: "status_filter" });
             });
         });
 
@@ -691,8 +932,9 @@
                 });
 
                 clearHomeFeedback();
+                clearCommandCategoryFilter();
                 window.location.hash = "competition-results";
-                void loadCompetitions();
+                void loadCompetitions({ trackSource: "level_filter" });
             });
         });
 
@@ -721,6 +963,7 @@
         if (backButton) {
             backButton.classList.add("cursor-pointer");
             backButton.addEventListener("click", () => {
+                trackNavigationRecord("home", "back_to_competition_list");
                 window.location.href = routes.competitionList;
             });
         }
@@ -799,12 +1042,13 @@
                 overviewMeta.textContent = `分类：${competition.category_name || "--"} / 主办方：${competition.organizer || "--"}`;
             }
 
-            if (overviewConsultButton) {
-                overviewConsultButton.classList.add("cursor-pointer");
-                overviewConsultButton.addEventListener("click", () => {
-                    window.location.href = aiConsultUrl(competition.competition_id);
-                }, { once: true });
-            }
+                if (overviewConsultButton) {
+                    overviewConsultButton.classList.add("cursor-pointer");
+                    overviewConsultButton.addEventListener("click", () => {
+                        trackNavigationRecord("ai-consult", "open_ai_consult", competition.competition_id);
+                        window.location.href = aiConsultUrl(competition.competition_id);
+                    }, { once: true });
+                }
 
             if (registrationCard) {
                 const valueSpans = registrationCard.querySelectorAll(".flex.justify-between.items-center span:last-child");
@@ -932,6 +1176,7 @@
                 if (teaserButton) {
                     teaserButton.classList.add("cursor-pointer");
                     teaserButton.addEventListener("click", () => {
+                        trackNavigationRecord("ai-consult", "open_ai_consult", competition.competition_id);
                         window.location.href = aiConsultUrl(competition.competition_id);
                     }, { once: true });
                 }
@@ -961,25 +1206,668 @@
     }
 
     function wireAiConsultPage() {
-        const detailButton = document.querySelector("aside button.w-full");
-        if (detailButton) {
-            detailButton.classList.add("cursor-pointer");
-            detailButton.addEventListener("click", () => {
-                const competitionId = parsePositiveInteger(getQueryParam("competitionId")) || readRememberedCompetitionId();
-                window.location.href = competitionDetailUrl(competitionId || 3);
+        const competitionId = parsePositiveInteger(getQueryParam("competitionId")) || readRememberedCompetitionId() || 3;
+        rememberCompetitionId(competitionId);
+
+        const pageTitle = document.querySelector("header span.text-h1.font-h1");
+        const conversationPanel = document.querySelector("main .col-span-12.lg\\:col-span-8");
+        const messagesContainer = conversationPanel ? conversationPanel.querySelector(".flex-1.overflow-y-auto.p-md.space-y-md") : null;
+        const inputPanel = conversationPanel ? conversationPanel.querySelector(".p-md.bg-surface-container-low.border-t") : null;
+        const exampleButtonsWrap = inputPanel ? inputPanel.querySelector(".flex.flex-wrap.gap-xs.mb-md") : null;
+        const modeSelect = inputPanel ? inputPanel.querySelector("select") : null;
+        const textarea = inputPanel ? inputPanel.querySelector("textarea") : null;
+        const sendButton = inputPanel ? inputPanel.querySelector("button.bg-primary") : null;
+        const contextCard = document.querySelector("aside > div:first-child");
+        const insightCard = document.querySelector("aside > div:last-child");
+
+        if (!conversationPanel || !messagesContainer || !inputPanel || !textarea || !sendButton) {
+            return;
+        }
+
+        const storageKeyPrefix = `consultation:${competitionId}`;
+        const state = {
+            competitionId,
+            competition: null,
+            sessionId: window.sessionStorage.getItem(`${storageKeyPrefix}:sessionId`) || "",
+            messages: [],
+            exampleQuestions: [],
+            followUpQuestions: [],
+            welcomeMessage: "",
+            mode: modeSelect && modeSelect.selectedIndex === 1 ? "normal" : "stream",
+            sending: false,
+            loading: true,
+            loadingMessage: "正在加载竞赛咨询上下文...",
+            errorMessage: "",
+            draftAssistantText: "",
+            draftVisible: false
+        };
+
+        function requestConsultApiJson(path, options = {}) {
+            const {
+                method = "GET",
+                params = {},
+                formData = null
+            } = options;
+
+            const headers = {
+                Accept: "application/json"
+            };
+            const requestOptions = {
+                method
+            };
+
+            if (formData) {
+                const body = new URLSearchParams();
+                Object.entries(formData).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null) {
+                        body.set(key, String(value));
+                    }
+                });
+                headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
+                requestOptions.body = body.toString();
+            }
+
+            requestOptions.headers = applyAuthHeaders(headers);
+
+            return fetch(buildApiUrl(path, params), requestOptions).then(async (response) => {
+                let payload = null;
+                try {
+                    payload = await response.json();
+                } catch (error) {
+                    throw new Error("接口返回的不是有效 JSON。");
+                }
+
+                if (!response.ok) {
+                    throw new Error(payload && payload.message ? payload.message : `请求失败：${response.status}`);
+                }
+
+                if (payload && typeof payload.code === "number" && payload.code !== 0) {
+                    throw new Error(payload.message || "接口返回异常。");
+                }
+
+                return payload;
             });
         }
 
-        const exampleButtons = document.querySelectorAll(".flex.flex-wrap.gap-xs.mb-md button");
-        const textarea = document.querySelector("textarea");
-        exampleButtons.forEach((button) => {
-            button.addEventListener("click", () => {
-                if (textarea) {
-                    textarea.value = button.textContent.trim();
-                    textarea.focus();
+        async function requestConsultStream(path, formData, handlers = {}) {
+            const body = new URLSearchParams();
+            Object.entries(formData || {}).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    body.set(key, String(value));
                 }
             });
+
+            const response = await fetch(buildApiUrl(path), {
+                method: "POST",
+                headers: applyAuthHeaders({
+                    Accept: "text/event-stream",
+                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+                }),
+                body: body.toString()
+            });
+
+            if (!response.ok) {
+                const rawText = await response.text();
+                try {
+                    const payload = JSON.parse(rawText);
+                    throw new Error(payload && payload.message ? payload.message : `请求失败：${response.status}`);
+                } catch (error) {
+                    if (error instanceof Error && error.message) {
+                        throw error;
+                    }
+                    throw new Error(rawText || `请求失败：${response.status}`);
+                }
+            }
+
+            if (!response.body) {
+                throw new Error("当前浏览器环境不支持流式响应。");
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let buffer = "";
+
+            const consumeEventBlock = (block) => {
+                const lines = block.split("\n");
+                let eventName = "message";
+                const dataLines = [];
+
+                lines.forEach((line) => {
+                    const normalizedLine = line.trim();
+                    if (!normalizedLine) {
+                        return;
+                    }
+                    if (normalizedLine.startsWith("event:")) {
+                        eventName = normalizedLine.slice(6).trim() || "message";
+                    } else if (normalizedLine.startsWith("data:")) {
+                        dataLines.push(normalizedLine.slice(5).trim());
+                    }
+                });
+
+                if (!dataLines.length) {
+                    return;
+                }
+
+                const payloadText = dataLines.join("\n");
+                let payload = null;
+                try {
+                    payload = JSON.parse(payloadText);
+                } catch (error) {
+                    payload = { text: payloadText };
+                }
+
+                if (eventName === "start" && typeof handlers.onStart === "function") {
+                    handlers.onStart(payload);
+                } else if (eventName === "delta" && typeof handlers.onDelta === "function") {
+                    handlers.onDelta(payload);
+                } else if (eventName === "done" && typeof handlers.onDone === "function") {
+                    handlers.onDone(payload);
+                } else if (eventName === "error") {
+                    const message = payload && payload.message ? payload.message : "咨询失败。";
+                    throw new Error(message);
+                }
+            };
+
+            while (true) {
+                const { value, done } = await reader.read();
+                buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+                buffer = buffer.replace(/\r\n/g, "\n");
+
+                let separatorIndex = buffer.indexOf("\n\n");
+                while (separatorIndex >= 0) {
+                    const block = buffer.slice(0, separatorIndex);
+                    buffer = buffer.slice(separatorIndex + 2);
+                    if (block.trim()) {
+                        consumeEventBlock(block);
+                    }
+                    separatorIndex = buffer.indexOf("\n\n");
+                }
+
+                if (done) {
+                    break;
+                }
+            }
+
+            if (buffer.trim()) {
+                consumeEventBlock(buffer);
+            }
+        }
+
+        function messageStorageKey() {
+            return `${storageKeyPrefix}:messages`;
+        }
+
+        function persistConversation() {
+            window.sessionStorage.setItem(`${storageKeyPrefix}:sessionId`, state.sessionId || "");
+            window.sessionStorage.setItem(messageStorageKey(), JSON.stringify(state.messages));
+        }
+
+        function restoreConversation() {
+            const raw = window.sessionStorage.getItem(messageStorageKey());
+            if (!raw) {
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) {
+                    state.messages = parsed.filter((item) => item && item.role && item.content).map((item) => ({
+                        role: item.role,
+                        content: String(item.content),
+                        createdAt: item.createdAt || item.create_time || ""
+                    }));
+                }
+            } catch (error) {
+                state.messages = [];
+            }
+        }
+
+        function normalizeConversationMessages(messages) {
+            if (!Array.isArray(messages)) {
+                return [];
+            }
+
+            return messages.filter((item) => item && item.role && item.content).map((item) => ({
+                role: String(item.role),
+                content: String(item.content),
+                createdAt: item.createdAt || item.create_time || ""
+            }));
+        }
+
+        function buildHistoryPayload() {
+            return state.messages.map((message) => ({
+                role: message.role,
+                content: message.content,
+                create_time: message.createdAt || ""
+            }));
+        }
+
+        function resetConversationWithWelcome() {
+            state.messages = state.welcomeMessage
+                ? [{
+                    role: "assistant",
+                    content: state.welcomeMessage,
+                    createdAt: ""
+                }]
+                : [];
+            persistConversation();
+        }
+
+        function activeExampleQuestions() {
+            return state.followUpQuestions.length ? state.followUpQuestions : state.exampleQuestions;
+        }
+
+        function autoResizeTextarea() {
+            textarea.style.height = "auto";
+            textarea.style.height = `${Math.min(160, Math.max(44, textarea.scrollHeight))}px`;
+        }
+
+        function roleBubbleMarkup(message) {
+            const isAssistant = message.role === "assistant";
+            const wrapperClass = isAssistant ? "justify-start" : "justify-end";
+            const bubbleClass = isAssistant
+                ? "bg-surface-container bubble-ai"
+                : "bg-surface-container-high bubble-user";
+            const iconShell = isAssistant
+                ? "bg-primary-container text-on-primary-container"
+                : "bg-secondary-container text-on-secondary-container";
+            const iconName = isAssistant ? "smart_toy" : "person";
+            const contentHtml = escapeHtml(message.content).replace(/\n/g, "<br>");
+
+            return `
+                <div class="flex items-start gap-sm ${wrapperClass}">
+                    ${isAssistant ? `
+                        <div class="w-8 h-8 rounded-lg ${iconShell} flex items-center justify-center text-[20px] shrink-0">
+                            <span class="material-symbols-outlined text-[20px]">${iconName}</span>
+                        </div>
+                    ` : ""}
+                    <div class="max-w-[85%] ${bubbleClass} p-md rounded-2xl text-on-surface font-body-md whitespace-normal">
+                        ${contentHtml}
+                    </div>
+                    ${isAssistant ? "" : `
+                        <div class="w-8 h-8 rounded-lg ${iconShell} flex items-center justify-center text-[20px] shrink-0">
+                            <span class="material-symbols-outlined text-[20px]">${iconName}</span>
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        function draftAssistantMarkup() {
+            if (!state.draftVisible) {
+                return "";
+            }
+
+            if (state.draftAssistantText) {
+                return roleBubbleMarkup({
+                    role: "assistant",
+                    content: state.draftAssistantText
+                });
+            }
+
+            return `
+                <div class="flex items-start gap-sm">
+                    <div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container shrink-0">
+                        <span class="material-symbols-outlined text-[20px]">smart_toy</span>
+                    </div>
+                    <div class="max-w-[85%] bg-primary-container/10 p-md rounded-2xl text-on-surface font-body-md bubble-ai border border-primary/20">
+                        <p class="mb-sm">AI 正在结合当前竞赛信息实时生成回复...</p>
+                        <div class="flex items-center gap-xs text-primary font-label-caps">
+                            <span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+                            <span class="w-2 h-2 bg-primary rounded-full animate-pulse delay-75"></span>
+                            <span class="w-2 h-2 bg-primary rounded-full animate-pulse delay-150"></span>
+                            <span class="ml-xs">生成中...</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderMessages() {
+            const notice = state.errorMessage
+                ? `<div class="rounded-xl border border-error/30 bg-error-container/40 px-md py-sm text-body-md text-on-error-container">${escapeHtml(state.errorMessage)}</div>`
+                : "";
+
+            const loading = state.loading
+                ? `<div class="rounded-xl border border-primary/20 bg-primary/5 px-md py-sm text-body-md text-primary">${escapeHtml(state.loadingMessage)}</div>`
+                : "";
+
+            messagesContainer.innerHTML = `
+                ${notice}
+                ${loading}
+                ${state.messages.map((message) => roleBubbleMarkup(message)).join("")}
+                ${draftAssistantMarkup()}
+            `;
+
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function renderExampleButtons() {
+            if (!exampleButtonsWrap) {
+                return;
+            }
+
+            exampleButtonsWrap.innerHTML = activeExampleQuestions().map((question) => `
+                <button type="button" class="px-sm py-xs bg-surface-container-lowest border border-outline-variant rounded-full text-body-md text-on-surface-variant hover:border-primary hover:text-primary transition-all">
+                    ${escapeHtml(question)}
+                </button>
+            `).join("");
+
+            exampleButtonsWrap.querySelectorAll("button").forEach((button) => {
+                button.addEventListener("click", () => {
+                    textarea.value = button.textContent.trim();
+                    autoResizeTextarea();
+                    textarea.focus();
+                });
+            });
+        }
+
+        function renderContextCard() {
+            if (!contextCard || !state.competition) {
+                return;
+            }
+
+            contextCard.innerHTML = `
+                <h3 class="font-h2 text-h2 text-on-surface mb-md flex items-center gap-xs">
+                    <span class="material-symbols-outlined text-primary">info</span>
+                    当前咨询背景
+                </h3>
+                <div class="space-y-sm">
+                    <div>
+                        <span class="font-label-caps text-label-caps text-on-surface-variant block mb-xs">竞赛名称</span>
+                        <p class="font-body-md text-body-md text-on-surface">${escapeHtml(state.competition.competition_name || "--")}</p>
+                    </div>
+                    <div class="flex gap-sm">
+                        <div class="flex-1">
+                            <span class="font-label-caps text-label-caps text-on-surface-variant block mb-xs">赛事级别</span>
+                            <span class="inline-flex items-center px-sm py-1 bg-primary/10 text-primary text-label-caps font-label-caps rounded-full">${escapeHtml(levelMeta(state.competition.competition_level).label)}</span>
+                        </div>
+                        <div class="flex-1">
+                            <span class="font-label-caps text-label-caps text-on-surface-variant block mb-xs">报名状态</span>
+                            <span class="inline-flex items-center px-sm py-1 bg-secondary-container/20 text-on-secondary-container text-label-caps font-label-caps rounded-full">${escapeHtml(statusMeta(state.competition.signup_status).label)}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="font-label-caps text-label-caps text-on-surface-variant block mb-xs">适合专业</span>
+                        <p class="font-body-md text-body-md text-on-surface">${escapeHtml(state.competition.suitable_major || "不限专业")}</p>
+                    </div>
+                    <div>
+                        <span class="font-label-caps text-label-caps text-on-surface-variant block mb-xs">报名时间</span>
+                        <p class="font-body-md text-body-md text-on-surface">${escapeHtml(formatDate(state.competition.signup_start))} - ${escapeHtml(formatDate(state.competition.signup_end))}</p>
+                    </div>
+                </div>
+                <div class="mt-md pt-md border-t border-outline-variant/30">
+                    <button class="w-full py-sm bg-surface-container-high text-on-surface font-h2 text-h2 rounded-xl hover:bg-surface-container-highest transition-all flex items-center justify-center gap-xs">
+                        查看完整竞赛详情
+                        <span class="material-symbols-outlined">open_in_new</span>
+                    </button>
+                </div>
+            `;
+
+            const detailButton = contextCard.querySelector("button");
+            if (detailButton) {
+                detailButton.classList.add("cursor-pointer");
+                detailButton.addEventListener("click", () => {
+                    trackNavigationRecord("competition-detail", "back_to_competition_detail", state.competitionId);
+                    window.location.href = competitionDetailUrl(state.competitionId);
+                });
+            }
+        }
+
+        function renderInsightCard() {
+            if (!insightCard || !state.competition) {
+                return;
+            }
+
+            insightCard.innerHTML = `
+                <h3 class="font-h2 text-h2 text-on-surface mb-md flex items-center gap-xs">
+                    <span class="material-symbols-outlined text-primary">tips_and_updates</span>
+                    提问建议
+                </h3>
+                <div class="space-y-md">
+                    <div class="rounded-xl bg-surface-container p-md">
+                        <p class="text-label-caps font-label-caps text-on-surface-variant mb-xs">会话状态</p>
+                        <p class="font-body-md text-body-md text-on-surface">
+                            已关联 ${escapeHtml(state.competition.category_name || "竞赛")} 上下文，当前对话消息 ${escapeHtml(String(state.messages.length))} 条。
+                        </p>
+                    </div>
+                    <div class="rounded-xl bg-surface-container-low p-md">
+                        <p class="text-label-caps font-label-caps text-on-surface-variant mb-sm">建议继续追问</p>
+                        <div class="space-y-sm">
+                            ${activeExampleQuestions().map((question) => `
+                                <button type="button" class="w-full text-left rounded-xl border border-outline-variant/30 bg-surface-container-lowest px-sm py-sm text-body-md text-on-surface hover:border-primary hover:text-primary transition-colors">
+                                    ${escapeHtml(question)}
+                                </button>
+                            `).join("")}
+                        </div>
+                    </div>
+                    <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                        当前问答会优先结合竞赛名称、级别、报名状态、适合专业、参赛规则和简介生成建议，也会延续当前会话上下文继续追问。
+                    </p>
+                </div>
+            `;
+
+            insightCard.querySelectorAll("button").forEach((button) => {
+                button.addEventListener("click", () => {
+                    textarea.value = button.textContent.trim();
+                    autoResizeTextarea();
+                    textarea.focus();
+                });
+            });
+        }
+
+        function renderAll() {
+            if (pageTitle) {
+                pageTitle.textContent = state.competition ? `${state.competition.competition_name} 咨询` : "竞赛智能咨询";
+            }
+
+            renderExampleButtons();
+            renderMessages();
+            renderContextCard();
+            renderInsightCard();
+        }
+
+        function pushMessage(role, content) {
+            state.messages.push({
+                role,
+                content,
+                createdAt: new Date().toISOString()
+            });
+            persistConversation();
+        }
+
+        async function animateAssistantReply(answer, finalMessages) {
+            state.draftVisible = true;
+            state.draftAssistantText = "";
+            renderMessages();
+
+            if (state.mode !== "stream") {
+                state.draftVisible = false;
+                state.draftAssistantText = "";
+                if (Array.isArray(finalMessages) && finalMessages.length) {
+                    state.messages = normalizeConversationMessages(finalMessages);
+                    persistConversation();
+                } else {
+                    pushMessage("assistant", answer);
+                }
+                renderAll();
+                return;
+            }
+
+            const step = Math.max(4, Math.floor(answer.length / 30));
+            for (let index = 0; index < answer.length; index += step) {
+                state.draftAssistantText = answer.slice(0, index + step);
+                renderMessages();
+                await new Promise((resolve) => window.setTimeout(resolve, 35));
+            }
+
+            state.draftVisible = false;
+            state.draftAssistantText = "";
+            if (Array.isArray(finalMessages) && finalMessages.length) {
+                state.messages = normalizeConversationMessages(finalMessages);
+                persistConversation();
+            } else {
+                pushMessage("assistant", answer);
+            }
+            renderAll();
+        }
+
+        async function sendQuestion() {
+            const question = textarea.value.trim();
+            if (!question || state.sending || !state.competition) {
+                return;
+            }
+
+            const historyMessages = buildHistoryPayload();
+            state.errorMessage = "";
+            state.sending = true;
+            pushMessage("user", question);
+            textarea.value = "";
+            autoResizeTextarea();
+            state.draftVisible = true;
+            state.draftAssistantText = "";
+            renderMessages();
+
+            try {
+                if (state.mode === "stream") {
+                    let finalPayload = null;
+
+                    await requestConsultStream("/api/consultations/stream", {
+                        competition_id: state.competitionId,
+                        session_id: state.sessionId,
+                        history: JSON.stringify(historyMessages),
+                        question
+                    }, {
+                        onStart: (payload) => {
+                            state.sessionId = payload && payload.session_id ? String(payload.session_id) : state.sessionId;
+                            window.sessionStorage.setItem(`${storageKeyPrefix}:sessionId`, state.sessionId || "");
+                        },
+                        onDelta: (payload) => {
+                            const text = payload && payload.text ? String(payload.text) : "";
+                            if (!text) {
+                                return;
+                            }
+                            state.draftVisible = true;
+                            state.draftAssistantText += text;
+                            renderMessages();
+                        },
+                        onDone: (payload) => {
+                            finalPayload = payload;
+                            state.sessionId = payload && payload.session_id ? String(payload.session_id) : state.sessionId;
+                            state.followUpQuestions = payload && Array.isArray(payload.follow_up_questions)
+                                ? payload.follow_up_questions
+                                : [];
+                            state.draftVisible = false;
+                            state.draftAssistantText = "";
+
+                            if (payload && Array.isArray(payload.messages) && payload.messages.length) {
+                                state.messages = normalizeConversationMessages(payload.messages);
+                                persistConversation();
+                            } else if (payload && payload.answer) {
+                                pushMessage("assistant", String(payload.answer));
+                            }
+
+                            renderAll();
+                        }
+                    });
+
+                    if (!finalPayload) {
+                        throw new Error("流式响应未正常结束。");
+                    }
+                } else {
+                    const payload = await requestConsultApiJson("/api/consultations", {
+                        method: "POST",
+                        formData: {
+                            competition_id: state.competitionId,
+                            session_id: state.sessionId,
+                            history: JSON.stringify(historyMessages),
+                            question,
+                            response_mode: state.mode
+                        }
+                    });
+
+                    const data = payload && payload.data ? payload.data : null;
+                    if (!data || !data.answer) {
+                        throw new Error("没有获取到问答结果。");
+                    }
+
+                    state.sessionId = data.session_id || state.sessionId;
+                    state.followUpQuestions = Array.isArray(data.follow_up_questions) ? data.follow_up_questions : [];
+                    window.sessionStorage.setItem(`${storageKeyPrefix}:sessionId`, state.sessionId || "");
+                    await animateAssistantReply(data.answer, data.messages);
+                }
+            } catch (error) {
+                state.draftVisible = false;
+                state.draftAssistantText = "";
+                state.errorMessage = `咨询失败：${error.message}`;
+                renderMessages();
+            } finally {
+                if (state.errorMessage) {
+                    state.messages = normalizeConversationMessages(historyMessages);
+                    persistConversation();
+                }
+                state.sending = false;
+            }
+        }
+
+        async function loadConsultationContext() {
+            state.loading = true;
+            state.loadingMessage = "正在加载竞赛咨询上下文...";
+            state.errorMessage = "";
+            renderMessages();
+
+            try {
+                const payload = await requestConsultApiJson("/api/consultations/context", {
+                    method: "GET",
+                    params: {
+                        competition_id: state.competitionId
+                    }
+                });
+
+                const data = payload && payload.data ? payload.data : null;
+                if (!data || !data.competition) {
+                    throw new Error("没有获取到竞赛咨询上下文。");
+                }
+
+                state.competition = data.competition;
+                state.welcomeMessage = data.welcome_message || "";
+                state.exampleQuestions = Array.isArray(data.example_questions) ? data.example_questions : [];
+                state.followUpQuestions = [];
+                restoreConversation();
+                if (!state.messages.length) {
+                    resetConversationWithWelcome();
+                }
+                document.title = `${state.competition.competition_name} - 智能咨询`;
+            } catch (error) {
+                state.errorMessage = `加载咨询上下文失败：${error.message}。请先启动 backend/run-dev.bat。`;
+            } finally {
+                state.loading = false;
+                renderAll();
+            }
+        }
+
+        if (modeSelect) {
+            modeSelect.addEventListener("change", () => {
+                state.mode = modeSelect.selectedIndex === 1 ? "normal" : "stream";
+            });
+        }
+
+        textarea.addEventListener("input", autoResizeTextarea);
+        textarea.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                void sendQuestion();
+            }
         });
+
+        sendButton.classList.add("cursor-pointer");
+        sendButton.addEventListener("click", () => {
+            void sendQuestion();
+        });
+
+        autoResizeTextarea();
+        renderAll();
+        void loadConsultationContext();
     }
 
     function wireRecordsPage() {
@@ -996,7 +1884,769 @@
         const footerLinks = document.querySelectorAll("footer a[href='#']");
         assignFooterLinks(footerLinks, [routes.launch, routes.home, routes.aiConsult]);
 
-        scrollToHashTarget();
+        const asideSection = document.querySelector("aside.lg\\:col-span-4.space-y-md");
+        if (!statsSection || !recordsSection || !asideSection) {
+            scrollToHashTarget();
+            return;
+        }
+
+        const state = {
+            loading: true,
+            errorMessage: "",
+            overview: {
+                total_sessions: 0,
+                total_messages: 0,
+                competition_total: 0,
+                hot_category_total: 0
+            },
+            items: [],
+            hotCategories: []
+        };
+
+        function formatDateTime(value) {
+            if (!value) {
+                return "--";
+            }
+
+            return String(value).slice(0, 16).replace("T", " ");
+        }
+
+        function renderStatsSection() {
+            const overview = state.overview || {};
+            const cards = [
+                {
+                    label: "咨询会话数",
+                    icon: "chat",
+                    value: overview.total_sessions || 0,
+                    hint: state.loading ? "正在同步最新记录..." : "AI 咨询已沉淀为会话记录"
+                },
+                {
+                    label: "累计消息数",
+                    icon: "forum",
+                    value: overview.total_messages || 0,
+                    hint: "统计用户提问与 AI 回复总数"
+                },
+                {
+                    label: "涉及竞赛数",
+                    icon: "emoji_events",
+                    value: overview.competition_total || 0,
+                    hint: "有咨询行为的竞赛数量"
+                },
+                {
+                    label: "热门分类数",
+                    icon: "insights",
+                    value: overview.hot_category_total || 0,
+                    hint: "已形成咨询热度分布"
+                }
+            ];
+
+            statsSection.innerHTML = cards.map((card) => `
+                <div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/10">
+                    <div class="flex items-center justify-between mb-sm">
+                        <span class="text-label-caps font-label-caps text-on-surface-variant uppercase">${escapeHtml(card.label)}</span>
+                        <span class="material-symbols-outlined text-primary">${card.icon}</span>
+                    </div>
+                    <p class="text-display font-display text-on-surface">${escapeHtml(String(card.value))}</p>
+                    <p class="text-body-md text-on-surface-variant mt-xs">${escapeHtml(card.hint)}</p>
+                </div>
+            `).join("");
+        }
+
+        function renderRecordsSection() {
+            const statusNotice = state.loading
+                ? `<div class="rounded-xl border border-primary/20 bg-primary/5 px-md py-sm text-body-md text-primary">正在加载咨询记录...</div>`
+                : state.errorMessage
+                    ? `<div class="rounded-xl border border-error/30 bg-error-container/40 px-md py-sm text-body-md text-on-error-container">${escapeHtml(state.errorMessage)}</div>`
+                    : "";
+
+            const recordsHtml = state.items.length
+                ? state.items.map((item) => `
+                    <button type="button" data-record-competition-id="${escapeHtml(String(item.competition_id || 0))}" class="w-full flex items-start gap-md p-sm hover:bg-surface-container-low rounded-lg transition-all group text-left">
+                        <div class="bg-primary-container/10 p-2 rounded-lg">
+                            <span class="material-symbols-outlined text-primary">smart_toy</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-start gap-sm">
+                                <div>
+                                    <h4 class="font-h2 text-body-md text-on-surface">${escapeHtml(item.latest_question || `${item.competition_name} 咨询记录`)}</h4>
+                                    <p class="text-label-caps text-on-surface-variant mt-1">${escapeHtml(item.competition_name || "未命名竞赛")} · ${escapeHtml(item.category_name || "未分类")}</p>
+                                </div>
+                                <span class="text-label-caps text-on-surface-variant shrink-0">${escapeHtml(formatDateTime(item.update_time))}</span>
+                            </div>
+                            <p class="text-body-md text-on-surface-variant mt-2 line-clamp-2">${escapeHtml(trimSnippet(item.latest_answer || item.latest_question || "暂无咨询内容。", 120))}</p>
+                            <p class="text-label-caps text-primary mt-2">消息数 ${escapeHtml(String(item.message_count || 0))}</p>
+                        </div>
+                        <span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity shrink-0">chevron_right</span>
+                    </button>
+                `).join("")
+                : `
+                    <div class="rounded-xl border border-dashed border-outline-variant/40 bg-surface-container-low px-md py-lg text-center">
+                        <p class="text-h2 text-on-surface mb-sm">还没有咨询记录</p>
+                        <p class="text-body-md text-on-surface-variant mb-md">先去竞赛详情页或 AI 咨询页提几个问题，这里就会自动生成记录。</p>
+                        <a href="${routes.home}" class="inline-flex items-center gap-xs px-md py-sm rounded-lg bg-primary text-on-primary font-h2 text-body-md hover:opacity-90 transition-opacity">
+                            去首页开始咨询
+                            <span class="material-symbols-outlined">arrow_forward</span>
+                        </a>
+                    </div>
+                `;
+
+            recordsSection.innerHTML = `
+                <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10 overflow-hidden">
+                    <div class="flex border-b border-outline-variant/10 px-md">
+                        <button class="px-md py-sm font-h2 text-body-md text-primary border-b-2 border-primary">咨询记录</button>
+                        <button class="px-md py-sm font-h2 text-body-md text-on-surface-variant/60 cursor-not-allowed" disabled>搜索记录</button>
+                        <button class="px-md py-sm font-h2 text-body-md text-on-surface-variant/60 cursor-not-allowed" disabled>导航记录</button>
+                    </div>
+                    <div class="p-md space-y-sm">
+                        ${statusNotice}
+                        ${recordsHtml}
+                    </div>
+                    <div class="p-md text-center border-t border-outline-variant/10 text-body-md text-on-surface-variant">
+                        当前展示 ${escapeHtml(String(state.items.length))} 条最新咨询会话
+                    </div>
+                </div>
+            `;
+
+            recordsSection.querySelectorAll("[data-record-competition-id]").forEach((button) => {
+                button.addEventListener("click", () => {
+                    const competitionId = parsePositiveInteger(button.getAttribute("data-record-competition-id"));
+                    if (!competitionId) {
+                        return;
+                    }
+                    rememberCompetitionId(competitionId);
+                    trackNavigationRecord("ai-consult", "open_record_consult", competitionId);
+                    window.location.href = aiConsultUrl(competitionId);
+                });
+            });
+        }
+
+        function renderAsideSection() {
+            const totalSessions = Number(state.overview.total_sessions || 0);
+            const palette = ["bg-primary", "bg-secondary-container", "bg-tertiary", "bg-surface-container-highest"];
+
+            const categoryRows = state.hotCategories.length
+                ? state.hotCategories.slice(0, 4).map((item, index) => {
+                    const percentage = totalSessions > 0
+                        ? Math.max(5, Math.round((Number(item.session_count || 0) / totalSessions) * 100))
+                        : 0;
+
+                    return `
+                        <div class="space-y-xs">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <div class="w-3 h-3 rounded-full ${palette[index % palette.length]}"></div>
+                                    <span class="text-body-md text-on-surface truncate">${escapeHtml(item.category_name || "未分类")}</span>
+                                </div>
+                                <span class="text-body-md font-semibold shrink-0">${escapeHtml(String(item.session_count || 0))} 次</span>
+                            </div>
+                            <div class="h-2 rounded-full bg-surface-container-high overflow-hidden">
+                                <div class="h-full ${palette[index % palette.length]}" style="width:${percentage}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join("")
+                : `<p class="text-body-md text-on-surface-variant">暂无热门分类数据，产生几条咨询记录后这里会自动更新。</p>`;
+
+            asideSection.innerHTML = `
+                <div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/10">
+                    <h3 class="font-h2 text-h2 text-on-surface mb-md">热门咨询分类</h3>
+                    <div class="space-y-md">
+                        ${categoryRows}
+                    </div>
+                </div>
+                <div class="bg-primary text-on-primary p-md rounded-xl shadow-lg relative overflow-hidden group">
+                    <div class="relative z-10">
+                        <h4 class="font-h1 text-h1 mb-2">继续沉淀咨询数据</h4>
+                        <p class="text-body-md opacity-90 mb-md">咨询越多，这里的会话数、分类热度和竞赛覆盖就越真实，适合答辩时展示系统闭环。</p>
+                        <div class="flex flex-wrap gap-sm">
+                            <a href="${routes.home}" class="inline-flex items-center gap-xs bg-white text-primary px-sm py-2 rounded-lg font-h2 text-body-md shadow-sm hover:bg-primary-fixed transition-colors">
+                                去首页
+                            </a>
+                            <a href="${routes.aiConsult}" class="inline-flex items-center gap-xs border border-white/40 px-sm py-2 rounded-lg font-h2 text-body-md hover:bg-white/10 transition-colors">
+                                去咨询页
+                            </a>
+                        </div>
+                    </div>
+                    <span class="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] opacity-10 rotate-12 group-hover:scale-110 transition-transform">insights</span>
+                </div>
+            `;
+        }
+
+        function renderAll() {
+            renderStatsSection();
+            renderRecordsSection();
+            renderAsideSection();
+        }
+
+        async function loadRecords() {
+            state.loading = true;
+            state.errorMessage = "";
+            renderAll();
+
+            try {
+                const payload = await fetchApiJson("/api/consultations/records");
+                const data = payload && payload.data ? payload.data : null;
+                if (!data) {
+                    throw new Error("没有获取到记录统计数据。");
+                }
+
+                state.overview = data.overview || state.overview;
+                state.items = Array.isArray(data.items) ? data.items : [];
+                state.hotCategories = Array.isArray(data.hot_categories) ? data.hot_categories : [];
+            } catch (error) {
+                state.errorMessage = `加载记录统计失败：${error.message}`;
+            } finally {
+                state.loading = false;
+                renderAll();
+                scrollToHashTarget();
+            }
+        }
+
+        void loadRecords();
+    }
+
+    function wireRecordsPageEnhanced() {
+        const statsSection = document.querySelector("section.grid.grid-cols-1.md\\:grid-cols-4");
+        const recordsSection = document.querySelector("section.lg\\:col-span-8.space-y-md");
+        const asideSection = document.querySelector("aside.lg\\:col-span-4.space-y-md");
+        const footerLinks = document.querySelectorAll("footer a[href='#']");
+
+        assignFooterLinks(footerLinks, [routes.launch, routes.home, routes.aiConsult]);
+
+        if (!statsSection || !recordsSection || !asideSection) {
+            scrollToHashTarget();
+            return;
+        }
+
+        const state = {
+            loading: true,
+            errorMessage: "",
+            activeTab: "consult",
+            consultations: {
+                overview: {
+                    total_sessions: 0,
+                    total_messages: 0,
+                    competition_total: 0,
+                    hot_category_total: 0
+                },
+                items: [],
+                hotCategories: []
+            },
+            activities: {
+                overview: {
+                    total_searches: 0,
+                    total_navigations: 0
+                },
+                searchRecords: [],
+                navigationRecords: []
+            }
+        };
+
+        function resolveActiveTabFromHash() {
+            if (window.location.hash === "#search-records") {
+                return "search";
+            }
+
+            if (window.location.hash === "#navigation-records") {
+                return "navigation";
+            }
+
+            return "consult";
+        }
+
+        function tabHash(tabKey) {
+            if (tabKey === "search") {
+                return "#search-records";
+            }
+
+            if (tabKey === "navigation") {
+                return "#navigation-records";
+            }
+
+            return "#consult-records";
+        }
+
+        function syncActiveTab() {
+            state.activeTab = resolveActiveTabFromHash();
+        }
+
+        function formatDateTime(value) {
+            if (!value) {
+                return "--";
+            }
+
+            return String(value).slice(0, 16).replace("T", " ");
+        }
+
+        function pageLabel(page) {
+            switch (page) {
+                case "home":
+                    return "首页";
+                case "competition-detail":
+                    return "竞赛详情";
+                case "ai-consult":
+                    return "AI 咨询";
+                case "records-statistics":
+                    return "记录统计";
+                default:
+                    return page || "未知页面";
+            }
+        }
+
+        function actionLabel(action) {
+            switch (action) {
+                case "open_competition_detail":
+                    return "打开竞赛详情";
+                case "open_ai_consult":
+                    return "进入 AI 咨询";
+                case "back_to_competition_detail":
+                    return "返回竞赛详情";
+                case "open_record_consult":
+                    return "从记录页继续咨询";
+                case "back_to_competition_list":
+                    return "返回竞赛列表";
+                case "open_navigation_record":
+                    return "从导航记录再次访问";
+                default:
+                    return action || "页面跳转";
+            }
+        }
+
+        function searchSourceLabel(source) {
+            switch (source) {
+                case "keyword_input":
+                    return "关键词输入";
+                case "command_open_list":
+                    return "命令打开列表";
+                case "command_ai_search":
+                    return "命令搜索 AI";
+                case "command_keyword":
+                    return "命令关键词";
+                case "major_filter":
+                    return "专业筛选";
+                case "status_filter":
+                    return "报名状态筛选";
+                case "level_filter":
+                    return "级别筛选";
+                default:
+                    return source || "普通搜索";
+            }
+        }
+
+        function searchSummary(item) {
+            const parts = [];
+            if (item.keyword) {
+                parts.push(`关键词：${item.keyword}`);
+            }
+            if (item.major) {
+                parts.push(`专业：${item.major}`);
+            }
+            if (item.competition_level) {
+                parts.push(`级别：${item.competition_level}`);
+            }
+            if (item.signup_status) {
+                parts.push(`状态：${item.signup_status}`);
+            }
+
+            return parts.length ? parts.join(" / ") : "无筛选条件";
+        }
+
+        function aggregateRows(items, keyBuilder, labelBuilder, valueBuilder) {
+            const bucket = new Map();
+
+            items.forEach((item) => {
+                const key = keyBuilder(item);
+                if (!key) {
+                    return;
+                }
+
+                if (!bucket.has(key)) {
+                    bucket.set(key, {
+                        label: labelBuilder(item, key),
+                        value: 0
+                    });
+                }
+
+                bucket.get(key).value += valueBuilder(item);
+            });
+
+            return Array.from(bucket.values()).sort((left, right) => right.value - left.value).slice(0, 4);
+        }
+
+        function renderStatsSection() {
+            const consultationOverview = state.consultations.overview || {};
+            const activityOverview = state.activities.overview || {};
+            const cards = [
+                {
+                    label: "咨询会话数",
+                    icon: "chat",
+                    value: consultationOverview.total_sessions || 0,
+                    hint: state.loading ? "正在同步最新记录..." : "AI 咨询已形成真实会话"
+                },
+                {
+                    label: "累计消息数",
+                    icon: "forum",
+                    value: consultationOverview.total_messages || 0,
+                    hint: "统计学生提问与 AI 回复"
+                },
+                {
+                    label: "搜索记录数",
+                    icon: "search",
+                    value: activityOverview.total_searches || 0,
+                    hint: "首页筛选与命令搜索都会沉淀"
+                },
+                {
+                    label: "导航记录数",
+                    icon: "route",
+                    value: activityOverview.total_navigations || 0,
+                    hint: "页面跳转路径可用于答辩展示"
+                }
+            ];
+
+            statsSection.id = "hot-statistics";
+            statsSection.innerHTML = cards.map((card) => `
+                <div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/10">
+                    <div class="flex items-center justify-between mb-sm">
+                        <span class="text-label-caps font-label-caps text-on-surface-variant uppercase">${escapeHtml(card.label)}</span>
+                        <span class="material-symbols-outlined text-primary">${card.icon}</span>
+                    </div>
+                    <p class="text-display font-display text-on-surface">${escapeHtml(String(card.value))}</p>
+                    <p class="text-body-md text-on-surface-variant mt-xs">${escapeHtml(card.hint)}</p>
+                </div>
+            `).join("");
+        }
+
+        function renderConsultationItems() {
+            const items = state.consultations.items || [];
+            if (!items.length) {
+                return `
+                    <div class="rounded-xl border border-dashed border-outline-variant/40 bg-surface-container-low px-md py-lg text-center">
+                        <p class="text-h2 text-on-surface mb-sm">还没有咨询记录</p>
+                        <p class="text-body-md text-on-surface-variant mb-md">先去竞赛详情页或 AI 咨询页提几个问题，这里就会自动生成记录。</p>
+                        <a href="${routes.home}" class="inline-flex items-center gap-xs px-md py-sm rounded-lg bg-primary text-on-primary font-h2 text-body-md hover:opacity-90 transition-opacity">
+                            去首页开始咨询
+                            <span class="material-symbols-outlined">arrow_forward</span>
+                        </a>
+                    </div>
+                `;
+            }
+
+            return items.map((item) => `
+                <button type="button" data-record-competition-id="${escapeHtml(String(item.competition_id || 0))}" class="w-full flex items-start gap-md p-sm hover:bg-surface-container-low rounded-lg transition-all group text-left">
+                    <div class="bg-primary-container/10 p-2 rounded-lg">
+                        <span class="material-symbols-outlined text-primary">smart_toy</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start gap-sm">
+                            <div>
+                                <h4 class="font-h2 text-body-md text-on-surface">${escapeHtml(item.latest_question || `${item.competition_name || "竞赛"} 咨询记录`)}</h4>
+                                <p class="text-label-caps text-on-surface-variant mt-1">${escapeHtml(item.competition_name || "未命名竞赛")} · ${escapeHtml(item.category_name || "未分类")}</p>
+                            </div>
+                            <span class="text-label-caps text-on-surface-variant shrink-0">${escapeHtml(formatDateTime(item.update_time))}</span>
+                        </div>
+                        <p class="text-body-md text-on-surface-variant mt-2 line-clamp-2">${escapeHtml(trimSnippet(item.latest_answer || item.latest_question || "暂无咨询内容。", 120))}</p>
+                        <p class="text-label-caps text-primary mt-2">消息数 ${escapeHtml(String(item.message_count || 0))}</p>
+                    </div>
+                    <span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity shrink-0">chevron_right</span>
+                </button>
+            `).join("");
+        }
+
+        function renderSearchItems() {
+            const items = state.activities.searchRecords || [];
+            if (!items.length) {
+                return `
+                    <div class="rounded-xl border border-dashed border-outline-variant/40 bg-surface-container-low px-md py-lg text-center">
+                        <p class="text-h2 text-on-surface mb-sm">还没有搜索记录</p>
+                        <p class="text-body-md text-on-surface-variant">在首页输入关键词、使用命令搜索或切换筛选后，这里会自动出现记录。</p>
+                    </div>
+                `;
+            }
+
+            return items.map((item) => `
+                <div class="flex items-start gap-md p-sm rounded-lg border border-outline-variant/20 bg-surface-container-lowest">
+                    <div class="bg-primary-container/10 p-2 rounded-lg">
+                        <span class="material-symbols-outlined text-primary">search</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start gap-sm">
+                            <div>
+                                <h4 class="font-h2 text-body-md text-on-surface">${escapeHtml(searchSourceLabel(item.trigger_source))}</h4>
+                                <p class="text-label-caps text-on-surface-variant mt-1">${escapeHtml(searchSummary(item))}</p>
+                            </div>
+                            <span class="text-label-caps text-on-surface-variant shrink-0">${escapeHtml(formatDateTime(item.create_time))}</span>
+                        </div>
+                        <p class="text-body-md text-on-surface-variant mt-2">命中结果 ${escapeHtml(String(item.result_count || 0))} 条</p>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        function renderNavigationItems() {
+            const items = state.activities.navigationRecords || [];
+            if (!items.length) {
+                return `
+                    <div class="rounded-xl border border-dashed border-outline-variant/40 bg-surface-container-low px-md py-lg text-center">
+                        <p class="text-h2 text-on-surface mb-sm">还没有导航记录</p>
+                        <p class="text-body-md text-on-surface-variant">当你从首页进入详情页、从详情页进入 AI 咨询页时，这里会自动记录跳转轨迹。</p>
+                    </div>
+                `;
+            }
+
+            return items.map((item) => {
+                const targetHref = item.to_page === "ai-consult" && item.competition_id
+                    ? aiConsultUrl(item.competition_id)
+                    : item.to_page === "competition-detail" && item.competition_id
+                        ? competitionDetailUrl(item.competition_id)
+                        : item.to_page === "home"
+                            ? routes.competitionList
+                            : "";
+
+                return `
+                    <button
+                        type="button"
+                        class="w-full flex items-start gap-md p-sm rounded-lg border border-outline-variant/20 bg-surface-container-lowest text-left ${targetHref ? "hover:bg-surface-container-low transition-colors" : "cursor-default"}"
+                        ${targetHref ? `data-navigation-href="${escapeHtml(targetHref)}" data-navigation-competition-id="${escapeHtml(String(item.competition_id || 0))}" data-navigation-to-page="${escapeHtml(item.to_page || "")}"` : ""}
+                    >
+                        <div class="bg-primary-container/10 p-2 rounded-lg">
+                            <span class="material-symbols-outlined text-primary">route</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-start gap-sm">
+                                <div>
+                                    <h4 class="font-h2 text-body-md text-on-surface">${escapeHtml(actionLabel(item.action_name))}</h4>
+                                    <p class="text-label-caps text-on-surface-variant mt-1">${escapeHtml(pageLabel(item.from_page))} → ${escapeHtml(pageLabel(item.to_page))}</p>
+                                </div>
+                                <span class="text-label-caps text-on-surface-variant shrink-0">${escapeHtml(formatDateTime(item.create_time))}</span>
+                            </div>
+                            <p class="text-body-md text-on-surface-variant mt-2">${escapeHtml(item.competition_name || "通用页面跳转")}</p>
+                        </div>
+                        ${targetHref ? `<span class="material-symbols-outlined text-on-surface-variant shrink-0">chevron_right</span>` : ""}
+                    </button>
+                `;
+            }).join("");
+        }
+
+        function renderRecordsSection() {
+            const statusNotice = state.loading
+                ? `<div class="rounded-xl border border-primary/20 bg-primary/5 px-md py-sm text-body-md text-primary">正在加载记录统计...</div>`
+                : state.errorMessage
+                    ? `<div class="rounded-xl border border-error/30 bg-error-container/40 px-md py-sm text-body-md text-on-error-container">${escapeHtml(state.errorMessage)}</div>`
+                    : "";
+
+            const tabs = [
+                { key: "consult", label: "咨询记录" },
+                { key: "search", label: "搜索记录" },
+                { key: "navigation", label: "导航记录" }
+            ];
+
+            let contentHtml = "";
+            let footerText = "";
+            if (state.activeTab === "search") {
+                contentHtml = renderSearchItems();
+                footerText = `当前展示 ${state.activities.searchRecords.length} 条最新搜索记录`;
+            } else if (state.activeTab === "navigation") {
+                contentHtml = renderNavigationItems();
+                footerText = `当前展示 ${state.activities.navigationRecords.length} 条最新导航记录`;
+            } else {
+                contentHtml = renderConsultationItems();
+                footerText = `当前展示 ${state.consultations.items.length} 条最新咨询会话`;
+            }
+
+            recordsSection.id = state.activeTab === "search"
+                ? "search-records"
+                : state.activeTab === "navigation"
+                    ? "navigation-records"
+                    : "consult-records";
+
+            recordsSection.innerHTML = `
+                <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10 overflow-hidden">
+                    <div class="flex border-b border-outline-variant/10 px-md">
+                        ${tabs.map((tab) => `
+                            <button
+                                type="button"
+                                data-record-tab="${tab.key}"
+                                class="px-md py-sm font-h2 text-body-md transition-colors ${state.activeTab === tab.key ? "text-primary border-b-2 border-primary" : "text-on-surface-variant hover:text-primary"}"
+                            >
+                                ${tab.label}
+                            </button>
+                        `).join("")}
+                    </div>
+                    <div class="p-md space-y-sm">
+                        ${statusNotice}
+                        ${contentHtml}
+                    </div>
+                    <div class="p-md text-center border-t border-outline-variant/10 text-body-md text-on-surface-variant">
+                        ${escapeHtml(footerText)}
+                    </div>
+                </div>
+            `;
+
+            recordsSection.querySelectorAll("[data-record-tab]").forEach((button) => {
+                button.addEventListener("click", () => {
+                    const tabKey = button.getAttribute("data-record-tab");
+                    if (!tabKey) {
+                        return;
+                    }
+                    window.location.hash = tabHash(tabKey);
+                });
+            });
+
+            recordsSection.querySelectorAll("[data-record-competition-id]").forEach((button) => {
+                button.addEventListener("click", () => {
+                    const competitionId = parsePositiveInteger(button.getAttribute("data-record-competition-id"));
+                    if (!competitionId) {
+                        return;
+                    }
+                    rememberCompetitionId(competitionId);
+                    trackNavigationRecord("ai-consult", "open_record_consult", competitionId);
+                    window.location.href = aiConsultUrl(competitionId);
+                });
+            });
+
+            recordsSection.querySelectorAll("[data-navigation-href]").forEach((button) => {
+                button.addEventListener("click", () => {
+                    const href = button.getAttribute("data-navigation-href");
+                    if (!href) {
+                        return;
+                    }
+
+                    const competitionId = parsePositiveInteger(button.getAttribute("data-navigation-competition-id"));
+                    const toPage = button.getAttribute("data-navigation-to-page") || "";
+                    if (competitionId) {
+                        rememberCompetitionId(competitionId);
+                    }
+
+                    trackNavigationRecord(toPage || "home", "open_navigation_record", competitionId || 0);
+                    window.location.href = href;
+                });
+            });
+        }
+
+        function renderAsideSection() {
+            const palette = ["bg-primary", "bg-secondary-container", "bg-tertiary", "bg-surface-container-highest"];
+            let title = "热门咨询分类";
+            let description = "咨询越多，这里的分布越真实，适合答辩时展示系统闭环。";
+            let rows = [];
+
+            if (state.activeTab === "search") {
+                title = "搜索来源分布";
+                description = "可以直观看到学生更偏向命令搜索还是筛选搜索。";
+                rows = aggregateRows(
+                    state.activities.searchRecords,
+                    (item) => item.trigger_source || "unknown",
+                    (item) => searchSourceLabel(item.trigger_source),
+                    () => 1
+                );
+            } else if (state.activeTab === "navigation") {
+                title = "导航去向分布";
+                description = "能够展示学生从哪些页面流向详情页和咨询页。";
+                rows = aggregateRows(
+                    state.activities.navigationRecords,
+                    (item) => item.to_page || "unknown",
+                    (item, key) => pageLabel(key),
+                    () => 1
+                );
+            } else {
+                const totalSessions = Number(state.consultations.overview.total_sessions || 0);
+                rows = (state.consultations.hotCategories || []).slice(0, 4).map((item) => ({
+                    label: item.category_name || "未分类",
+                    rawValue: item.session_count || 0,
+                    percentage: totalSessions > 0 ? Math.round((Number(item.session_count || 0) / totalSessions) * 100) : 0
+                }));
+            }
+
+            const rowsHtml = rows.length
+                ? rows.map((item, index) => {
+                    const rawValue = item.rawValue !== undefined ? item.rawValue : item.value;
+                    const percentage = item.percentage !== undefined ? item.percentage : item.value;
+                    return `
+                        <div class="space-y-xs">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <div class="w-3 h-3 rounded-full ${palette[index % palette.length]}"></div>
+                                    <span class="text-body-md text-on-surface truncate">${escapeHtml(item.label)}</span>
+                                </div>
+                                <span class="text-body-md font-semibold shrink-0">${escapeHtml(String(rawValue))}</span>
+                            </div>
+                            <div class="h-2 rounded-full bg-surface-container-high overflow-hidden">
+                                <div class="h-full ${palette[index % palette.length]}" style="width:${Math.max(5, Math.min(100, percentage || 0))}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join("")
+                : `<p class="text-body-md text-on-surface-variant">当前还没有足够的数据分布，继续使用系统后这里会自动更新。</p>`;
+
+            asideSection.innerHTML = `
+                <div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/10">
+                    <h3 class="font-h2 text-h2 text-on-surface mb-md">${escapeHtml(title)}</h3>
+                    <div class="space-y-md">
+                        ${rowsHtml}
+                    </div>
+                </div>
+                <div class="bg-primary text-on-primary p-md rounded-xl shadow-lg relative overflow-hidden group">
+                    <div class="relative z-10">
+                        <h4 class="font-h1 text-h1 mb-2">继续沉淀使用数据</h4>
+                        <p class="text-body-md opacity-90 mb-md">${escapeHtml(description)}</p>
+                        <div class="flex flex-wrap gap-sm">
+                            <a href="${routes.home}" class="inline-flex items-center gap-xs bg-white text-primary px-sm py-2 rounded-lg font-h2 text-body-md shadow-sm hover:bg-primary-fixed transition-colors">
+                                去首页
+                            </a>
+                            <a href="${routes.aiConsult}" class="inline-flex items-center gap-xs border border-white/40 px-sm py-2 rounded-lg font-h2 text-body-md hover:bg-white/10 transition-colors">
+                                去咨询页
+                            </a>
+                        </div>
+                    </div>
+                    <span class="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] opacity-10 rotate-12 group-hover:scale-110 transition-transform">insights</span>
+                </div>
+            `;
+        }
+
+        function renderAll() {
+            renderStatsSection();
+            renderRecordsSection();
+            renderAsideSection();
+        }
+
+        async function loadRecords() {
+            state.loading = true;
+            state.errorMessage = "";
+            syncActiveTab();
+            renderAll();
+
+            try {
+                const payload = await fetchApiJson("/api/records/dashboard");
+                const data = payload && payload.data ? payload.data : null;
+                if (!data) {
+                    throw new Error("没有获取到记录统计数据。");
+                }
+
+                const consultationData = data.consultations || {};
+                const activityData = data.activities || {};
+
+                state.consultations.overview = consultationData.overview || state.consultations.overview;
+                state.consultations.items = Array.isArray(consultationData.items) ? consultationData.items : [];
+                state.consultations.hotCategories = Array.isArray(consultationData.hot_categories) ? consultationData.hot_categories : [];
+                state.activities.overview = activityData.overview || state.activities.overview;
+                state.activities.searchRecords = Array.isArray(activityData.search_records) ? activityData.search_records : [];
+                state.activities.navigationRecords = Array.isArray(activityData.navigation_records) ? activityData.navigation_records : [];
+            } catch (error) {
+                state.errorMessage = `加载记录统计失败：${error.message}`;
+            } finally {
+                state.loading = false;
+                renderAll();
+                scrollToHashTarget();
+            }
+        }
+
+        window.addEventListener("hashchange", () => {
+            syncActiveTab();
+            renderAll();
+            scrollToHashTarget();
+        });
+
+        syncActiveTab();
+        void loadRecords();
     }
 
     function wireAdminPage() {
@@ -1022,8 +2672,26 @@
             shortcutGroup.innerHTML = `
                 <a class="text-body-md text-on-surface-variant hover:text-primary transition-colors" href="${routes.home}">前台首页</a>
                 <a class="text-body-md text-on-surface-variant hover:text-primary transition-colors" href="${routes.records}">记录统计</a>
+                <button type="button" data-admin-logout="true" class="text-body-md text-on-surface-variant hover:text-primary transition-colors">退出登录</button>
             `;
             headerActions.prepend(shortcutGroup);
+        }
+
+        const logoutButton = headerActions ? headerActions.querySelector("[data-admin-logout='true']") : null;
+        if (logoutButton && logoutButton.dataset.bound !== "true") {
+            logoutButton.dataset.bound = "true";
+            logoutButton.addEventListener("click", async () => {
+                try {
+                    if (getAuthToken()) {
+                        await postApiForm("/api/auth/logout", {});
+                    }
+                } catch (error) {
+                    // Ignore logout errors and clear local session anyway.
+                }
+
+                clearAuthSession();
+                window.location.href = buildLaunchUrl({ login: "admin" });
+            });
         }
 
         const addButtons = [
@@ -1042,6 +2710,31 @@
 
         if (!workbench) {
             return;
+        }
+
+        function renderAccessDenied(message) {
+            workbench.innerHTML = `
+                <section class="p-xl">
+                    <div class="mx-auto max-w-3xl rounded-3xl border border-outline-variant/30 bg-surface-container-lowest p-xl shadow-sm">
+                        <div class="flex items-center gap-sm mb-md">
+                            <span class="material-symbols-outlined text-error text-[32px]">lock</span>
+                            <div>
+                                <h2 class="font-h1 text-h1 text-on-surface">需要管理员登录</h2>
+                                <p class="text-body-md text-on-surface-variant mt-xs">${escapeHtml(message)}</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-sm">
+                            <a href="${buildLaunchUrl({ redirect: "pages/admin-competition-management.html", login: "admin" })}" class="inline-flex items-center gap-xs rounded-xl bg-primary px-md py-sm text-body-md font-semibold text-on-primary hover:opacity-90 transition-opacity">
+                                前往登录入口
+                                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                            </a>
+                            <a href="${routes.home}" class="inline-flex items-center gap-xs rounded-xl border border-outline-variant px-md py-sm text-body-md font-semibold text-on-surface-variant hover:border-primary hover:text-primary transition-colors">
+                                返回前台首页
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            `;
         }
 
         const searchInput = document.querySelector("main header input[type='text']");
@@ -1127,14 +2820,15 @@
                 Accept: "application/json"
             };
             const requestOptions = {
-                method,
-                headers
+                method
             };
 
             if (formData) {
                 headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
                 requestOptions.body = toFormBody(formData);
             }
+
+            requestOptions.headers = applyAuthHeaders(headers);
 
             const response = await fetch(buildApiUrl(path, params), requestOptions);
             let payload = null;
@@ -1979,8 +3673,31 @@
             });
         });
 
-        renderAdminPage();
-        void loadAdminData();
+        async function initializeAdminPage() {
+            if (getAuthRole() !== "admin" || !getAuthToken()) {
+                renderAccessDenied("当前后台已开启权限控制，请先使用管理员账号登录。");
+                return;
+            }
+
+            try {
+                const payload = await fetchApiJson("/api/auth/me");
+                const user = payload && payload.data ? payload.data.user : null;
+                if (!user || user.role !== "admin") {
+                    clearAuthSession();
+                    renderAccessDenied("当前登录身份不是管理员，请重新登录后再进入后台。");
+                    return;
+                }
+            } catch (error) {
+                clearAuthSession();
+                renderAccessDenied(`管理员身份校验失败：${error.message}`);
+                return;
+            }
+
+            renderAdminPage();
+            await loadAdminData();
+        }
+
+        void initializeAdminPage();
     }
 
     makeBrandClickable();
@@ -1999,7 +3716,7 @@
     }
 
     if (pageName === "records-statistics.html") {
-        wireRecordsPage();
+        wireRecordsPageEnhanced();
     }
 
     if (pageName === "admin-competition-management.html") {

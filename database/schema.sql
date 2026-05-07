@@ -1,7 +1,3 @@
--- MySQL 8.0+
--- College Competition AI System
--- Phase 1 schema
-
 CREATE DATABASE IF NOT EXISTS college_competition_ai
   DEFAULT CHARACTER SET utf8mb4
   DEFAULT COLLATE utf8mb4_unicode_ci;
@@ -11,7 +7,6 @@ USE college_competition_ai;
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
-DROP TABLE IF EXISTS statistic_summary;
 DROP TABLE IF EXISTS navigation_command;
 DROP TABLE IF EXISTS consult_record;
 DROP TABLE IF EXISTS search_log;
@@ -22,103 +17,93 @@ DROP TABLE IF EXISTS user_info;
 SET FOREIGN_KEY_CHECKS = 1;
 
 CREATE TABLE user_info (
-    user_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'User primary key',
-    username VARCHAR(50) NOT NULL COMMENT 'Username',
-    password VARCHAR(255) NOT NULL COMMENT 'Password hash or demo-only password',
-    real_name VARCHAR(50) DEFAULT NULL COMMENT 'Real name',
-    major VARCHAR(50) DEFAULT NULL COMMENT 'Major',
-    grade VARCHAR(20) DEFAULT NULL COMMENT 'Grade',
-    user_type TINYINT NOT NULL DEFAULT 1 COMMENT '1 student, 2 admin',
-    status TINYINT NOT NULL DEFAULT 1 COMMENT '1 active, 0 disabled',
-    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Created at',
-    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated at',
+    user_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '用户主键',
+    username VARCHAR(50) NOT NULL COMMENT '登录账号',
+    password VARCHAR(255) NOT NULL COMMENT '登录密码',
+    real_name VARCHAR(50) DEFAULT NULL COMMENT '姓名',
+    major VARCHAR(50) DEFAULT NULL COMMENT '专业',
+    grade VARCHAR(20) DEFAULT NULL COMMENT '年级',
+    user_type TINYINT NOT NULL DEFAULT 1 COMMENT '1 学生，2 管理员',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '1 启用，0 禁用',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (user_id),
-    UNIQUE KEY uk_user_info_username (username),
-    KEY idx_user_info_user_type_status (user_type, status),
-    CONSTRAINT chk_user_info_user_type CHECK (user_type IN (1, 2)),
-    CONSTRAINT chk_user_info_status CHECK (status IN (0, 1))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='User table';
+    UNIQUE KEY uk_user_info_username (username)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
 CREATE TABLE competition_category (
-    category_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Category primary key',
-    category_name VARCHAR(64) NOT NULL COMMENT 'Category name',
-    category_desc VARCHAR(255) DEFAULT NULL COMMENT 'Category description',
-    sort_no INT NOT NULL DEFAULT 0 COMMENT 'Sort number',
-    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Created at',
-    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated at',
+    category_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '分类主键',
+    category_name VARCHAR(64) NOT NULL COMMENT '分类名称',
+    category_desc VARCHAR(255) DEFAULT NULL COMMENT '分类描述',
+    sort_no INT NOT NULL DEFAULT 0 COMMENT '排序值',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (category_id),
     UNIQUE KEY uk_competition_category_name (category_name),
     KEY idx_competition_category_sort_no (sort_no)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Competition category table';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='竞赛分类表';
 
 CREATE TABLE competition_info (
-    competition_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Competition primary key',
-    competition_name VARCHAR(128) NOT NULL COMMENT 'Competition name',
-    category_id BIGINT UNSIGNED DEFAULT NULL COMMENT 'Category id',
-    organizer VARCHAR(128) DEFAULT NULL COMMENT 'Organizer',
-    competition_level VARCHAR(32) DEFAULT NULL COMMENT 'Competition level',
-    signup_status VARCHAR(20) NOT NULL DEFAULT 'Open' COMMENT 'Signup status',
-    suitable_major VARCHAR(128) DEFAULT NULL COMMENT 'Suitable majors',
-    suitable_grade VARCHAR(64) DEFAULT NULL COMMENT 'Suitable grades',
-    signup_start DATETIME DEFAULT NULL COMMENT 'Signup start time',
-    signup_end DATETIME DEFAULT NULL COMMENT 'Signup end time',
-    competition_start DATETIME DEFAULT NULL COMMENT 'Competition start time',
-    competition_end DATETIME DEFAULT NULL COMMENT 'Competition end time',
-    official_url VARCHAR(255) DEFAULT NULL COMMENT 'Official url',
-    competition_desc TEXT DEFAULT NULL COMMENT 'Competition description',
-    participation_rules TEXT DEFAULT NULL COMMENT 'Participation rules',
-    display_status TINYINT NOT NULL DEFAULT 1 COMMENT '1 visible, 0 hidden',
-    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Created at',
-    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated at',
+    competition_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '竞赛主键',
+    competition_name VARCHAR(128) NOT NULL COMMENT '竞赛名称',
+    category_id BIGINT UNSIGNED DEFAULT NULL COMMENT '分类主键',
+    organizer VARCHAR(128) DEFAULT NULL COMMENT '主办方',
+    competition_level VARCHAR(32) DEFAULT NULL COMMENT '赛事级别',
+    signup_status VARCHAR(20) NOT NULL DEFAULT 'Open' COMMENT '报名状态',
+    suitable_major VARCHAR(128) DEFAULT NULL COMMENT '适合专业',
+    suitable_grade VARCHAR(64) DEFAULT NULL COMMENT '适合年级',
+    signup_start DATETIME DEFAULT NULL COMMENT '报名开始时间',
+    signup_end DATETIME DEFAULT NULL COMMENT '报名结束时间',
+    competition_start DATETIME DEFAULT NULL COMMENT '比赛开始时间',
+    competition_end DATETIME DEFAULT NULL COMMENT '比赛结束时间',
+    official_url VARCHAR(255) DEFAULT NULL COMMENT '官网链接',
+    competition_desc TEXT DEFAULT NULL COMMENT '竞赛简介',
+    participation_rules TEXT DEFAULT NULL COMMENT '参赛说明',
+    display_status TINYINT NOT NULL DEFAULT 1 COMMENT '1 显示，0 隐藏',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (competition_id),
+    KEY idx_competition_info_category (category_id),
+    KEY idx_competition_info_level_status (competition_level, signup_status, display_status),
     CONSTRAINT fk_competition_info_category
         FOREIGN KEY (category_id) REFERENCES competition_category (category_id)
         ON DELETE SET NULL
-        ON UPDATE CASCADE,
-    KEY idx_competition_info_category (category_id),
-    KEY idx_competition_info_level_status (competition_level, signup_status, display_status),
-    KEY idx_competition_info_signup_end (signup_end),
-    KEY idx_competition_info_name (competition_name),
-    CONSTRAINT chk_competition_info_signup_status
-        CHECK (signup_status IN ('Draft', 'Warmup', 'Open', 'Closed', 'Ended')),
-    CONSTRAINT chk_competition_info_display_status CHECK (display_status IN (0, 1))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Competition info table';
+        ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='竞赛信息表';
 
 CREATE TABLE search_log (
-    search_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Search log primary key',
-    user_id BIGINT UNSIGNED DEFAULT NULL COMMENT 'User id',
-    keyword VARCHAR(128) DEFAULT NULL COMMENT 'Search keyword',
-    category_id BIGINT UNSIGNED DEFAULT NULL COMMENT 'Category filter id',
-    filter_text VARCHAR(255) DEFAULT NULL COMMENT 'Filter text',
-    filter_snapshot JSON DEFAULT NULL COMMENT 'Filter snapshot json',
-    result_count INT NOT NULL DEFAULT 0 COMMENT 'Result count',
-    search_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Search time',
+    search_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '搜索记录主键',
+    user_id BIGINT UNSIGNED DEFAULT NULL COMMENT '用户主键',
+    keyword VARCHAR(128) DEFAULT NULL COMMENT '搜索关键词',
+    major VARCHAR(64) DEFAULT NULL COMMENT '专业筛选',
+    competition_level VARCHAR(64) DEFAULT NULL COMMENT '赛事级别筛选',
+    signup_status VARCHAR(32) DEFAULT NULL COMMENT '报名状态筛选',
+    trigger_source VARCHAR(64) DEFAULT NULL COMMENT '触发来源',
+    result_count INT NOT NULL DEFAULT 0 COMMENT '结果数量',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '记录时间',
     PRIMARY KEY (search_id),
+    KEY idx_search_log_user_time (user_id, create_time),
     CONSTRAINT fk_search_log_user
         FOREIGN KEY (user_id) REFERENCES user_info (user_id)
         ON DELETE SET NULL
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_search_log_category
-        FOREIGN KEY (category_id) REFERENCES competition_category (category_id)
-        ON DELETE SET NULL
-        ON UPDATE CASCADE,
-    KEY idx_search_log_user_time (user_id, search_time),
-    KEY idx_search_log_category_time (category_id, search_time),
-    CONSTRAINT chk_search_log_result_count CHECK (result_count >= 0)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Search log table';
+        ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搜索记录表';
 
 CREATE TABLE consult_record (
-    record_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Consult record primary key',
-    user_id BIGINT UNSIGNED DEFAULT NULL COMMENT 'User id',
-    competition_id BIGINT UNSIGNED DEFAULT NULL COMMENT 'Related competition id',
-    session_id VARCHAR(64) DEFAULT NULL COMMENT 'Conversation session id',
-    question_text TEXT NOT NULL COMMENT 'User question',
-    answer TEXT DEFAULT NULL COMMENT 'System answer',
-    consult_type VARCHAR(32) DEFAULT NULL COMMENT 'Consult type',
-    response_mode VARCHAR(16) DEFAULT NULL COMMENT 'JSON or SSE',
-    prompt_context TEXT DEFAULT NULL COMMENT 'Prompt summary context',
-    consult_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Consult time',
+    record_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '咨询记录主键',
+    user_id BIGINT UNSIGNED DEFAULT NULL COMMENT '用户主键',
+    competition_id BIGINT UNSIGNED DEFAULT NULL COMMENT '竞赛主键',
+    session_id VARCHAR(64) DEFAULT NULL COMMENT '连续对话会话 ID',
+    question_text TEXT NOT NULL COMMENT '用户问题',
+    answer TEXT DEFAULT NULL COMMENT 'AI 回复',
+    consult_type VARCHAR(32) DEFAULT NULL COMMENT '咨询类型',
+    response_mode VARCHAR(16) DEFAULT NULL COMMENT '返回模式',
+    prompt_context TEXT DEFAULT NULL COMMENT '提交给 AI 的上下文摘要',
+    consult_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '咨询时间',
     PRIMARY KEY (record_id),
+    KEY idx_consult_record_user_time (user_id, consult_time),
+    KEY idx_consult_record_session_time (session_id, consult_time),
+    KEY idx_consult_record_competition_time (competition_id, consult_time),
     CONSTRAINT fk_consult_record_user
         FOREIGN KEY (user_id) REFERENCES user_info (user_id)
         ON DELETE SET NULL
@@ -126,75 +111,26 @@ CREATE TABLE consult_record (
     CONSTRAINT fk_consult_record_competition
         FOREIGN KEY (competition_id) REFERENCES competition_info (competition_id)
         ON DELETE SET NULL
-        ON UPDATE CASCADE,
-    KEY idx_consult_record_user_time (user_id, consult_time),
-    KEY idx_consult_record_session_time (session_id, consult_time),
-    KEY idx_consult_record_competition_time (competition_id, consult_time),
-    CONSTRAINT chk_consult_record_response_mode CHECK (response_mode IN ('JSON', 'SSE') OR response_mode IS NULL)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Consult record table';
+        ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI 咨询记录表';
 
 CREATE TABLE navigation_command (
-    command_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Navigation command primary key',
-    user_id BIGINT UNSIGNED DEFAULT NULL COMMENT 'User id',
-    user_input VARCHAR(255) NOT NULL COMMENT 'Original user input',
-    intent_name VARCHAR(64) DEFAULT NULL COMMENT 'Intent name',
-    action_name VARCHAR(64) DEFAULT NULL COMMENT 'Action name',
-    target_page VARCHAR(64) DEFAULT NULL COMMENT 'Target page',
-    keyword VARCHAR(128) DEFAULT NULL COMMENT 'Extracted keyword',
-    command_params JSON DEFAULT NULL COMMENT 'Parameters json',
-    execute_result VARCHAR(32) DEFAULT NULL COMMENT 'Execution result',
-    execute_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Execution time',
+    command_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '导航记录主键',
+    user_id BIGINT UNSIGNED DEFAULT NULL COMMENT '用户主键',
+    from_page VARCHAR(64) DEFAULT NULL COMMENT '来源页面',
+    to_page VARCHAR(64) DEFAULT NULL COMMENT '目标页面',
+    action_name VARCHAR(64) DEFAULT NULL COMMENT '触发动作',
+    competition_id BIGINT UNSIGNED DEFAULT NULL COMMENT '关联竞赛主键',
+    competition_name VARCHAR(128) DEFAULT NULL COMMENT '关联竞赛名称',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '记录时间',
     PRIMARY KEY (command_id),
+    KEY idx_navigation_command_user_time (user_id, create_time),
     CONSTRAINT fk_navigation_command_user
         FOREIGN KEY (user_id) REFERENCES user_info (user_id)
         ON DELETE SET NULL
         ON UPDATE CASCADE,
-    KEY idx_navigation_command_user_time (user_id, execute_time),
-    KEY idx_navigation_command_intent_time (intent_name, execute_time),
-    CONSTRAINT chk_navigation_command_execute_result
-        CHECK (execute_result IN ('success', 'failed', 'ignored', 'no_match') OR execute_result IS NULL)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Navigation command table';
-
-CREATE TABLE statistic_summary (
-    summary_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Summary primary key',
-    summary_type VARCHAR(32) NOT NULL COMMENT 'Summary type',
-    summary_key VARCHAR(128) NOT NULL COMMENT 'Summary key',
-    summary_value INT NOT NULL DEFAULT 0 COMMENT 'Summary value',
-    summary_label VARCHAR(128) DEFAULT NULL COMMENT 'Summary label',
-    user_id BIGINT UNSIGNED DEFAULT NULL COMMENT 'Related user id',
-    record_id BIGINT UNSIGNED DEFAULT NULL COMMENT 'Related consult record id',
-    search_id BIGINT UNSIGNED DEFAULT NULL COMMENT 'Related search log id',
-    command_id BIGINT UNSIGNED DEFAULT NULL COMMENT 'Related command id',
-    category_id BIGINT UNSIGNED DEFAULT NULL COMMENT 'Related category id',
-    competition_id BIGINT UNSIGNED DEFAULT NULL COMMENT 'Related competition id',
-    stats_date DATE DEFAULT NULL COMMENT 'Statistics date',
-    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated at',
-    PRIMARY KEY (summary_id),
-    CONSTRAINT fk_statistic_summary_user
-        FOREIGN KEY (user_id) REFERENCES user_info (user_id)
-        ON DELETE SET NULL
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_statistic_summary_record
-        FOREIGN KEY (record_id) REFERENCES consult_record (record_id)
-        ON DELETE SET NULL
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_statistic_summary_search
-        FOREIGN KEY (search_id) REFERENCES search_log (search_id)
-        ON DELETE SET NULL
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_statistic_summary_command
-        FOREIGN KEY (command_id) REFERENCES navigation_command (command_id)
-        ON DELETE SET NULL
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_statistic_summary_category
-        FOREIGN KEY (category_id) REFERENCES competition_category (category_id)
-        ON DELETE SET NULL
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_statistic_summary_competition
+    CONSTRAINT fk_navigation_command_competition
         FOREIGN KEY (competition_id) REFERENCES competition_info (competition_id)
         ON DELETE SET NULL
-        ON UPDATE CASCADE,
-    KEY idx_statistic_summary_type_key (summary_type, summary_key),
-    KEY idx_statistic_summary_date (stats_date),
-    CONSTRAINT chk_statistic_summary_value CHECK (summary_value >= 0)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Statistic summary table';
+        ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='页面导航记录表';
